@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Abstract Art Prompt Generator (v1.9 - Pantone Pro)</title>
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png">
 <style>
@@ -29,665 +29,1071 @@
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
     margin:0; color:var(--ink);
-    font:16px/1.5 'Inter','Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
-  .container{
-    max-width:1200px; padding:20px;
-    margin:0 auto;
+    font:16px/1.5 'Inter','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+    background-attachment: fixed;
   }
-  h1{
-    font-size:1.7rem; margin-bottom:15px; color:var(--accent);
-  }
-  /* UI Components */
-  .grid{
-    display:grid; gap:20px; grid-template-columns:1fr 1fr;
-  }
-  .card{
-    background-color:var(--card); padding:20px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1);
-    transition:var(--transition);
-  }
-  .card-options {
-    display: flex; gap: 10px; margin-top: 15px;
-  }
-  .card-options .btn {
-    flex-grow: 1;
-  }
-  label{
-    display:block; margin-bottom:5px; font-weight:600; color:var(--muted);
-    font-size:.9rem;
-  }
-  select, input[type="range"], textarea{
-    width:100%; padding:10px; border:1px solid var(--bg2); border-radius:5px;
-    background-color:var(--bg2); color:var(--ink);
-    transition:var(--transition);
-    appearance:none; /* For custom styles */
-  }
-  select:focus, textarea:focus, input[type="range"]:focus{
-    outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--ring-strong);
-  }
-  .input-group {
-    margin-bottom: 15px;
-  }
-  .btn {
-    padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;
-    font-weight: 700; text-align: center;
+  .wrap{max-width:900px;margin:40px auto;padding:0 20px}
+  
+  /* Header & Lang Switcher */
+  header { position: relative; margin-bottom: 20px; }
+  h1{margin:0 0 8px;text-align:center;font-size:2.3rem;letter-spacing:.2px}
+  p.lead{margin:0 0 28px;text-align:center;color:var(--muted);font-size:.9rem}
+  
+  .lang-switch {
+    position: absolute; top: 0; right: 0;
+    background: rgba(0,0,0,0.4); border: 1px solid var(--ring);
+    color: var(--ink); padding: 5px 12px; border-radius: 20px;
+    cursor: pointer; font-size: 0.85rem; font-weight: bold;
     transition: var(--transition);
-    background-color: var(--accent); color: var(--ink);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
-  .btn:hover {
-    background-color: var(--accent2);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  }
-  .btn-secondary {
-    background-color: var(--bg2); color: var(--muted);
-    border: 1px solid var(--bg2);
-  }
-  .btn-secondary:hover {
-    background-color: var(--bg1);
-    border-color: var(--accent2);
-    color: var(--accent);
-  }
-  /* Range specific styles */
-  input[type=range] { height: 28px; cursor: pointer; }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 14px; width: 14px; border-radius: 50%;
-    background: var(--accent); margin-top: -5px;
-    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
-  }
-  input[type=range]::-webkit-slider-runnable-track {
-    width: 100%; height: 4px; background: var(--bg1);
-    border-radius: 2px;
-  }
-  .range-container {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .range-value {
-    font-weight: bold; width: 40px; text-align: right;
-    color: var(--accent);
-  }
-  
-  /* Output Area */
-  #outMain {
-    background-color: var(--bg2);
-    padding: 20px; border-radius: 10px;
-    white-space: pre-wrap; word-wrap: break-word;
-    font-family: monospace; cursor: copy;
-    border: 2px solid var(--card);
-    transition: border-color 0.3s ease;
-  }
-  #outMain:hover {
-    border-color: var(--accent);
-  }
-  
-  .output-controls {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 15px;
-  }
-  .output-controls span {
-    font-size: 0.9rem; color: var(--muted);
-  }
-  
-  /* Favorites & Image */
-  #favoritesList {
-    list-style: none; padding: 0; max-height: 400px; overflow-y: auto;
-  }
-  .fav-item {
-    display: flex; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--bg2);
-  }
-  .fav-text {
-    flex-grow: 1; cursor: pointer; font-size: 0.9rem;
-  }
-  .fav-actions button {
-    margin-left: 5px; padding: 5px 8px; font-size: 0.8rem;
-  }
-  
-  #image-area {
-    margin-top: 15px; border-radius: 10px; background-color: var(--bg2); padding: 15px;
-  }
-  #dropZone {
-    height: 150px; border: 2px dashed var(--muted); border-radius: 8px;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center; cursor: pointer; color: var(--muted);
-    transition: all 0.3s ease;
-  }
-  #dropZone.dragover {
-    border-color: var(--accent); background-color: var(--bg1);
-  }
-  #dropZone p { margin: 5px 0; font-size: 0.9rem; }
-  #imageUpload { display: none; }
-  #uploadedImage {
-    max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px;
-  }
+  .lang-switch:hover { background: var(--accent2); }
 
-  /* Language Switch */
-  #langSwitch {
-    float: right; margin-top: -30px;
-    padding: 5px 10px; font-size: 0.85rem;
-    background-color: var(--bg2); color: var(--accent);
-    border: 1px solid var(--accent);
+  .card{
+    background: var(--card);
+    border:1px solid var(--ring);
+    border-radius:18px; padding:18px; margin-bottom:16px;
+    backdrop-filter: blur(6px);
+    box-shadow:0 8px 32px rgba(0,0,0,.35);
   }
-
-  /* Notification */
-  .notification {
-    position: fixed; bottom: 20px; right: 20px;
-    background-color: var(--accent); color: var(--ink);
-    padding: 10px 20px; border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    z-index: 1000; opacity: 0;
-    transition: opacity 0.5s ease;
+  .card h2{
+    font-size:1.12rem; margin:0 0 10px;
+    padding-bottom:8px; border-bottom:1px dashed var(--ring);
+    letter-spacing:.2px
   }
-  .notification.show { opacity: 1; }
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center}
+  button{
+    border:none;border-radius:999px;padding:10px 18px;
+    font-size:0.9rem;font-weight:600;color:#fff;cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    box-shadow:0 6px 20px rgba(0,0,0,.28);
+    outline:none; position:relative; overflow:hidden;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  button.primary{background:linear-gradient(90deg,var(--accent),var(--accent3));}
+  button.secondary{background:rgba(255,255,255,.08);color:var(--ink);}
+  button.fav-btn{background:var(--accent2); color:white;}
+  button.fav-btn.active{background:var(--accent); color:white;}
+  button:hover{transform:translateY(-1px);filter:brightness(1.05);}
+  button:active{transform:translateY(1px);box-shadow:0 3px 12px rgba(0,0,0,.35);}
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(3,1fr);}
+  @media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.grid{grid-template-columns:1fr}}
+  
+  label{display:block;font-size:.86rem;margin-bottom:3px;color:var(--muted);}
+  select,input[type="number"]{
+    width:100%;padding:8px 10px;border-radius:8px;
+    border:1px solid var(--ring-strong);
+    background:rgba(0,0,0,.35);color:var(--ink);font-size:.9rem;
+  }
+  
+  /* Output Box */
+  .hint{font-size:.88rem;color:var(--muted); margin-bottom:5px; text-align: center;}
+  .out{
+    background:rgba(0,0,0,.45); border:1px solid var(--ring);
+    border-radius:12px;padding:14px;min-height:96px;cursor:pointer;white-space:pre-wrap;
+    transition:var(--transition);position:relative;font-size:.9rem; margin-top: 10px;
+  }
+  .out:hover{border-color:var(--ring-strong);background:rgba(0,0,0,.55);}
+  
+  .copy-notification{
+    position:fixed;top:20px;right:20px;background:var(--success);color:white;
+    padding:10px 20px;border-radius:10px;z-index:1000;
+    animation:fadeOut 2s forwards;box-shadow:0 10px 30px rgba(0,0,0,.3)
+  }
+  @keyframes fadeOut{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 
-  /* Media Queries */
-  @media (max-width: 768px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-    #langSwitch {
-      margin-top: 0;
-      float: none;
-      display: block;
-      margin-bottom: 15px;
-    }
+  /* Styles for Favorites and Image Upload */
+  .favorites-list{display:grid;gap:15px;margin-top:15px;}
+  .fav-item{
+    background:var(--bg1); border:1px solid var(--ring);
+    border-radius:12px;padding:10px;
+    display:flex;align-items:flex-start;gap:10px;
+    box-shadow:0 4px 15px rgba(0,0,0,.2);
+    position:relative;
+  }
+  .fav-item-image{
+    width:80px;height:80px;object-fit:cover;border-radius:8px;
+    flex-shrink:0; border:1px solid var(--ring-strong);
+  }
+  .fav-item-content{flex-grow:1;}
+  .fav-item-content p{
+    font-size:.85rem;color:var(--muted);
+    margin-bottom:5px;max-height:60px;overflow:hidden;
+    text-overflow:ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .fav-item-content .prompt-text{color:var(--ink); font-weight:500;}
+  .fav-item .fav-actions{display:flex; gap:5px;position:absolute; bottom:8px; right:8px;}
+  .fav-item .fav-actions button{
+    padding:6px 10px; font-size:.8rem; box-shadow:none; transform:none;
+    background:var(--accent2); opacity:0;
+    transition:opacity 0.2s ease, background 0.2s ease;
+  }
+  .fav-item:hover .fav-actions button{opacity:1;}
+  .fav-item .fav-actions button:hover{background:var(--accent);}
+  .fav-item .fav-actions button.delete-fav{background:var(--danger);opacity:0.8;}
+  .fav-item .fav-actions button.delete-fav:hover{background:#ff4747;}
+  
+  .drop-zone {
+    border: 2px dashed var(--ring-strong); border-radius: 12px;
+    padding: 20px; text-align: center; color: var(--muted);
+    font-size: 1rem; cursor: pointer; transition: all 0.3s ease; margin-top: 15px;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    background: rgba(var(--accent-rgb), 0.1); border-color: var(--accent); color: var(--ink);
+  }
+  .drop-zone input[type="file"] {display: none;}
+  .uploaded-image-preview {
+    max-width: 100%; height: auto; max-height: 200px;
+    display: block; margin: 10px auto; border-radius: 8px; border: 1px solid var(--ring);
+  }
+  .no-favorites{color:var(--muted); text-align:center; font-style: italic; padding:10px 0;}
+
+  /* Color Palette Preview */
+  .color-swatch-container { display: flex; gap: 2px; height: 36px; margin-top: 5px; width: 100%; }
+  .color-swatch {
+      flex-grow: 1; height: 100%; border-radius: 2px;
+      border: 1px solid rgba(0, 0, 0, 0.3); 
+      box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.1);
   }
 </style>
 </head>
 <body>
-<div class="container">
-  <select id="langSwitch"></select>
-  <h1>Abstract Art Prompt Generator (v1.9 - Pantone Pro)</h1>
-  <div class="grid">
-    <div class="card">
-      <h2><span data-key="titlePrompt">Generador de Prompt</span></h2>
-      <div class="output-controls">
-        <span data-key="clickCopy">Haz click en el prompt para copiarlo.</span>
-        <span data-key="promptLength">Longitud del Prompt:</span>
-      </div>
-      <pre id="outMain" data-key="copyMsg">...</pre>
-      <div class="card-options">
-        <button id="btnGenerate" class="btn" data-key="btnGenerate">GENERAR</button>
-        <button id="btnReset" class="btn btn-secondary" data-key="btnReset">Reiniciar</button>
-      </div>
-      <div class="card-options">
-        <button id="btnFav" class="btn btn-secondary" data-key="btnFav">Añadir a Favoritos</button>
-        <button id="btnSaveWithImage" class="btn btn-secondary" data-key="btnSave">Guardar con Imagen</button>
-      </div>
+<div class="wrap">
+  <header>
+      <button id="langToggle" class="lang-switch">🇪🇸 ESPAÑOL</button>
+      <h1 data-key="title">Abstract Art Prompt Generator</h1>
+      <p class="lead" data-key="subtitle">Shapes, Colors, and 2D Abstraction Styles (v1.9 - Pantone Pro)</p>
+  </header>
+
+  <div class="card">
+    <h2 data-key="resultsTitle">Results</h2>
+    <div class="btns">
+      <button class="primary" id="btnRand"><span data-key="btnRandom">🎲 Randomize</span></button>
+      <button class="secondary" id="btnReset"><span data-key="btnReset">🧹 Reset</span></button>
+      <button class="primary" id="btnGen"><span data-key="btnGenerate">✨ Generate Prompt</span></button>
+      <button class="fav-btn" id="btnFav"><span id="favIcon">⭐</span> <span data-key="btnSave">Save Prompt</span></button>
     </div>
     
-    <div class="card">
-      <h2><span data-key="titleConfig">Configuración Detallada</span></h2>
-      
-      <div class="input-group">
-        <label for="palette" data-key="labelPalette">Paleta de Color Pantone (Basado en la Colección Pro)</label>
-        <select id="palette"></select>
-      </div>
-      
-      <div class="input-group">
-        <label for="style" data-key="labelStyle">Estilo de Abstracción</label>
-        <select id="style"></select>
-      </div>
+    <div> 
+        <div class="hint" id="outLabel">PROMPT (CLICK TO COPY ENGLISH)</div> 
+        <div class="out" id="outMain">Initializing...</div> 
+    </div>
+  </div>
 
-      <div class="input-group">
-        <label for="geometry" data-key="labelGeometry">Geometría/Composición</label>
-        <select id="geometry"></select>
+  <div class="card">
+    <h2 data-key="secColor">Colors & Palette (Pantone)</h2>
+    <div class="grid">
+      <div style="grid-column: span 3;">
+        <label for="cPaleta" data-key="lblPalette">Select Palette (30 Sets)</label>
+        <select id="cPaleta"></select>
       </div>
-
-      <div class="input-group">
-        <label for="composition" data-key="labelComposition">Elementos Composicionales</label>
-        <select id="composition"></select>
-      </div>
-
-      <div class="input-group">
-        <label for="lighting" data-key="labelLighting">Iluminación y Renderizado</label>
-        <select id="lighting"></select>
-      </div>
-      
-      <div class="input-group">
-        <label for="mood" data-key="labelMood">Estado de Ánimo/Tema</label>
-        <select id="mood"></select>
-      </div>
-
-      <div class="input-group">
-        <label for="complexity" data-key="labelComplexity">Nivel de Detalle/Complejidad</label>
-        <div class="range-container">
-          <input type="range" id="complexity" min="0" max="100" step="1" value="50">
-          <span class="range-value" id="complexityValue">50</span>
-        </div>
+      <div><label for="cDistrib" data-key="lblDistrib">Distribution</label><select id="cDistrib"></select></div>
+      <div><label for="cLum" data-key="lblLum">Luminosity/Tone</label><select id="cLum"></select></div>
+      <div style="grid-column: span 1;"></div>
+      <div style="grid-column: span 3; margin-top: 0px;">
+          <label data-key="lblPreview">Palette Preview (10 Colors)</label>
+          <div id="palettePreview" class="color-swatch-container"></div>
       </div>
     </div>
   </div>
 
-  <div class="grid" style="margin-top: 20px;">
-    <div class="card">
-      <h2><span data-key="titleFavs">Favoritos Guardados</span></h2>
-      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;" data-key="favsTip">Los favoritos se guardan localmente en tu navegador. Puedes guardar hasta 20.</p>
-      <ul id="favoritesList"></ul>
-      <button id="btnClearFavs" class="btn btn-secondary" style="width:100%; margin-top:10px;" data-key="btnClearFavs">Limpiar Todos los Favoritos</button>
+  <div class="card">
+    <h2 data-key="uploadTitle">Save Image & Prompt</h2>
+    <div class="hint" data-key="uploadHint">
+      If you generated an image with the current prompt, upload it here.
     </div>
-    <div class="card">
-      <h2><span data-key="titleImage">Referencia de Imagen (Opcional)</span></h2>
-      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;" data-key="imageTip">Arrastra o haz click para añadir una imagen que se guardará junto con el prompt.</p>
-      <div id="dropZone">
-        <p data-key="dropText">Arrastra o haz click para subir una imagen</p>
-      </div>
-      <input type="file" id="imageUpload" accept="image/*">
-      <img id="uploadedImage" style="display: none;" />
+    <div id="dropZone" class="drop-zone">
+        <span data-key="dropText">Drag & drop your image here or click to select.</span><br>
+        <input type="file" id="imageUpload" accept="image/*">
+    </div>
+    <img id="imagePreview" class="uploaded-image-preview" style="display:none;">
+    <button class="primary" id="btnSaveWithImage" style="width:100%; margin-top:10px; display:none;">
+      <span data-key="btnSaveWithImg">💾 Save Prompt & Image</span>
+    </button>
+  </div>
+
+  <div class="card">
+    <h2 data-key="secGeo">Geometry & Pattern</h2>
+    <div class="grid">
+      <div><label for="aForma" data-key="lblShape">Base Shapes</label><select id="aForma"></select></div>
+      <div><label for="aPatron" data-key="lblPattern">Pattern/Arrangement</label><select id="aPatron"></select></div>
+      <div><label for="aTamano" data-key="lblSize">Size Variation</label><select id="aTamano"></select></div>
+      <div><label for="aDisp" data-key="lblDisp">Disposition/Order</label><select id="aDisp"></select></div>
+      <div><label for="aBorde" data-key="lblEdge">Edges/Outlines</label><select id="aBorde"></select></div>
+      <div><label for="aDistor" data-key="lblDistort">Distortion</label><select id="aDistor"></select></div>
+      <div><label for="aCount" data-key="lblDensity">Density (1-10)</label><input type="number" id="aCount" min="1" max="10" step="1"></div>
     </div>
   </div>
+
+  <div class="card">
+    <h2 data-key="secStyle">Style, Technique & Artist</h2>
+    <div class="grid">
+      <div><label for="eEstilo" data-key="lblStyle">Main Style</label><select id="eEstilo"></select></div>
+      <div><label for="eTecnica" data-key="lblTech">Technique (Paint)</label><select id="eTecnica"></select></div>
+      <div><label for="eArtista" data-key="lblArtist">Inspired by</label><select id="eArtista"></select></div>
+      <div><label for="eOrigen" data-key="lblOrigin">Conceptual Origin</label><select id="eOrigen"></select></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-key="secFinish">Composition & Finish</h2>
+    <div class="grid">
+      <div><label for="fComp" data-key="lblComp">Composition</label><select id="fComp"></select></div>
+      <div><label for="fTextura" data-key="lblTexture">Canvas Texture</label><select id="fTextura"></select></div>
+      <div><label for="fAcabado" data-key="lblFinish">Final Finish</select><select id="fAcabado"></select></div>
+      <div><label for="fRes" data-key="lblRes">Resolution/Detail</label><select id="fRes"></select></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 data-key="secLight">Lighting & Atmosphere</h2>
+    <div class="grid">
+      <div><label for="iLum" data-key="lblLight">Lighting Type</label><select id="iLum"></select></div>
+      <div><label for="iAngulo" data-key="lblAngle">Lighting Angle (º)</label><input type="number" id="iAngulo" min="0" max="360" step="1"></div>
+      <div style="grid-column: span 1;"></div> 
+    </div>
+  </div>
+  <div class="card">
+    <h2><span data-key="secFav">Saved Prompts</span> <span id="favCount">(0)</span></h2>
+    <div id="favoritesList" class="favorites-list">
+      <p class="no-favorites" id="noFavoritesMsg" data-key="noFav">
+        No saved prompts yet.
+      </p>
+    </div>
+  </div>
+
 </div>
-
-<div id="notification" class="notification"></div>
+<div id="copyNotification" class="copy-notification" style="display:none;"></div>
 
 <script>
-  // --- DATA (CONTENT) ---
-  const PROMPT_DATA = {
-    palette: [
-      { en: "PANTONE 18-3838 Ultra Violet", es: "PANTONE 18-3838 Ultra Violeta" },
-      { en: "PANTONE 17-5104 Ultimate Gray", es: "PANTONE 17-5104 Gris Definitivo" },
-      { en: "PANTONE 13-0647 Illuminating", es: "PANTONE 13-0647 Iluminador" },
-      { en: "PANTONE 19-4052 Classic Blue", es: "PANTONE 19-4052 Azul Clásico" },
-      { en: "PANTONE 16-1546 Living Coral", es: "PANTONE 16-1546 Coral Vivo" },
-      { en: "PANTONE 18-3838 Radiant Orchid", es: "PANTONE 18-3838 Orquídea Radiante" },
-      { en: "PANTONE 17-5641 Emerald", es: "PANTONE 17-5641 Esmeralda" },
-      { en: "PANTONE 19-1500 Marsala", es: "PANTONE 19-1500 Marsala" },
-      { en: "PANTONE 15-0343 Greenery", es: "PANTONE 15-0343 Verdura" },
-      { en: "PANTONE 18-1438 Russet Orange", es: "PANTONE 18-1438 Naranja Rojizo" },
-      { en: "PANTONE 15-1335 Peach Fuzz", es: "PANTONE 15-1335 Pelusa de Melocotón" },
-      { en: "PANTONE 13-4108 Serenity", es: "PANTONE 13-4108 Serenidad" },
-      { en: "PANTONE 15-3919 Blue Iris", es: "PANTONE 15-3919 Iris Azul" },
-      { en: "PANTONE 18-4220 Turkish Sea", es: "PANTONE 18-4220 Mar Turquesa" },
-      { en: "PANTONE 16-1325 Burnt Sienna", es: "PANTONE 16-1325 Siena Tostada" },
-      { en: "PANTONE 19-1557 Chili Pepper", es: "PANTONE 19-1557 Chile Picante" },
-      { en: "PANTONE 16-1358 Orange Tiger", es: "PANTONE 16-1358 Tigre Naranja" },
-      { en: "PANTONE 18-1750 Viva Magenta", es: "PANTONE 18-1750 Viva Magenta" },
-      { en: "PANTONE 17-3938 Very Peri", es: "PANTONE 17-3938 Very Peri" },
-      { en: "PANTONE 14-0852 Marigold", es: "PANTONE 14-0852 Caléndula" },
-      { en: "PANTONE 18-4005 Faded Denim", es: "PANTONE 18-4005 Denim Descolorido" },
-      { en: "PANTONE 16-1350 Amber Glow", es: "PANTONE 16-1350 Resplandor Ámbar" },
-      { en: "PANTONE 19-4032 Dress Blues", es: "PANTONE 19-4032 Azul Vestido" },
-      { en: "PANTONE 15-1050 Sandstone", es: "PANTONE 15-1050 Arenisca" },
-      { en: "PANTONE 17-6153 Forest Night", es: "PANTONE 17-6153 Noche Forestal" },
-      { en: "PANTONE 18-1550 Aurora Red", es: "PANTONE 18-1550 Rojo Aurora" },
-      { en: "PANTONE 19-0303 Jet Black", es: "PANTONE 19-0303 Negro Azabache" },
-      { en: "PANTONE 11-0601 Bright White", es: "PANTONE 11-0601 Blanco Brillante" },
-      { en: "PANTONE 14-4809 Celestial Blue", es: "PANTONE 14-4809 Azul Celestial" },
-      { en: "PANTONE 17-4726 Deep Dive", es: "PANTONE 17-4726 Inmersión Profunda" }
-    ],
-    style: [
-      { en: "Abstract Expressionism", es: "Expresionismo Abstracto" },
-      { en: "Geometric Abstraction", es: "Abstracción Geométrica" },
-      { en: "Lyrical Abstraction", es: "Abstracción Lírica" },
-      { en: "Minimalist Abstract", es: "Abstracto Minimalista" },
-      { en: "Color Field Painting", es: "Pintura de Campo de Color" },
-      { en: "Neo-Plasticism (De Stijl)", es: "Neoplasticismo (De Stijl)" },
-      { en: "Tachisme (Spot Painting)", es: "Tachismo (Pintura de Manchas)" },
-      { en: "Abstract Futurism", es: "Futurismo Abstracto" },
-      { en: "Digital Abstract Art", es: "Arte Abstracto Digital" },
-      { en: "Glitch Art Abstraction", es: "Abstracción de Arte Glitch" }
-    ],
-    geometry: [
-      { en: "Complex Interlocking Shapes", es: "Formas Enclavadas Complejas" },
-      { en: "Fluid, Curving Lines and Swirls", es: "Líneas Fluidas, Curvas y Remolinos" },
-      { en: "Grids and Precise Geometric Patterns", es: "Cuadrículas y Patrones Geométricos Precisos" },
-      { en: "Asymmetrical Balance, Dynamic Angles", es: "Balance Asimétrico, Ángulos Dinámicos" },
-      { en: "Fractal-like, Self-Similar Structures", es: "Estructuras Fractales, Autosimilares" },
-      { en: "Deconstructed Forms, Layered Transparency", es: "Formas Deconstruidas, Transparencia en Capas" },
-      { en: "Hard-Edge Lines and Smooth Transitions", es: "Líneas de Borde Duro y Transiciones Suaves" },
-      { en: "Biomorphic Shapes, Organic Flow", es: "Formas Biomórficas, Flujo Orgánico" }
-    ],
-    composition: [
-      { en: "A central focal point that dominates the canvas", es: "Un punto focal central que domina el lienzo" },
-      { en: "Infinite horizon, borderless composition", es: "Horizonte infinito, composición sin bordes" },
-      { en: "Tessellation pattern, repetition of motifs", es: "Patrón de teselado, repetición de motivos" },
-      { en: "Depth achieved through overlapping and chiaroscuro", es: "Profundidad lograda a través de superposición y claroscuro" },
-      { en: "Negative space is an active compositional element", es: "El espacio negativo es un elemento composicional activo" },
-      { en: "Scattered elements creating visual noise", es: "Elementos dispersos que crean ruido visual" },
-      { en: "Strong vertical and horizontal emphasis", es: "Fuerte énfasis vertical y horizontal" },
-      { en: "Radial symmetry and concentric circles", es: "Simetría radial y círculos concéntricos" }
-    ],
-    lighting: [
-      { en: "Dramatic volumetric lighting, cinematic mood", es: "Iluminación volumétrica dramática, ambiente cinematográfico" },
-      { en: "Soft, diffused global illumination, studio quality", es: "Iluminación global suave y difusa, calidad de estudio" },
-      { en: "High contrast rim light, cyberpunk aesthetic", es: "Luz de borde de alto contraste, estética ciberpunk" },
-      { en: "Backlit, colors bleeding into the light source", es: "Contraluz, colores que se desangran en la fuente de luz" },
-      { en: "Iridescent and holographic material rendering", es: "Renderizado de material iridiscente y holográfico" },
-      { en: "An ethereal glow, slightly out of focus (depth of field)", es: "Un resplandor etéreo, ligeramente desenfocado (profundidad de campo)" },
-      { en: "Matte, non-reflective surfaces, flat lighting", es: "Superficies mate, no reflectantes, iluminación plana" },
-      { en: "Caustic light patterns, subsurface scattering effects", es: "Patrones de luz cáustica, efectos de dispersión subsuperficial" }
-    ],
-    mood: [
-      { en: "A feeling of deep melancholy and introspection", es: "Un sentimiento de profunda melancolía e introspección" },
-      { en: "Energetic and chaotic, bursting with motion", es: "Energético y caótico, explotando de movimiento" },
-      { en: "Serene, tranquil, and meditative", es: "Sereno, tranquilo y meditativo" },
-      { en: "Vibrant and celebratory, a joyful explosion", es: "Vibrante y festivo, una explosión de alegría" },
-      { en: "Industrial and cold, metallic textures", es: "Industrial y frío, texturas metálicas" },
-      { en: "Warm and inviting, organic textures", es: "Cálido y acogedor, texturas orgánicas" },
-      { en: "Mysterious and ancient, faded colors", es: "Misterioso y antiguo, colores desvanecidos" },
-      { en: "Technological and futuristic, glowing lines", es: "Tecnológico y futurista, líneas brillantes" }
-    ]
-  };
-
+  // --- UI STRINGS ---
   const UI_STRINGS = {
-    titlePrompt: { en: "Prompt Generator", es: "Generador de Prompt" },
-    clickCopy: { en: "Click on the prompt to copy it.", es: "Haz click en el prompt para copiarlo." },
-    promptLength: { en: "Prompt Length: 0", es: "Longitud del Prompt: 0" },
-    titleConfig: { en: "Detailed Configuration", es: "Configuración Detallada" },
-    labelPalette: { en: "Pantone Color Palette (Based on Pro Collection)", es: "Paleta de Color Pantone (Basado en la Colección Pro)" },
-    labelStyle: { en: "Abstraction Style", es: "Estilo de Abstracción" },
-    labelGeometry: { en: "Geometry/Composition", es: "Geometría/Composición" },
-    labelComposition: { en: "Compositional Elements", es: "Elementos Composicionales" },
-    labelLighting: { en: "Lighting and Rendering", es: "Iluminación y Renderizado" },
-    labelMood: { en: "Mood/Theme", es: "Estado de Ánimo/Tema" },
-    labelComplexity: { en: "Detail Level/Complexity", es: "Nivel de Detalle/Complejidad" },
-    btnGenerate: { en: "GENERATE", es: "GENERAR" },
-    btnReset: { en: "Reset", es: "Reiniciar" },
-    btnFav: { en: "Add to Favorites", es: "Añadir a Favoritos" },
-    btnSave: { en: "Save with Image", es: "Guardar con Imagen" },
-    copyMsg: { en: "Prompt copied to clipboard!", es: "¡Prompt copiado al portapapeles!" },
-    favAdded: { en: "Prompt added to favorites!", es: "¡Prompt añadido a favoritos!" },
-    favRemoved: { en: "Favorite removed.", es: "Favorito eliminado." },
-    favsTip: { en: "Favorites are saved locally in your browser. You can save up to 20.", es: "Los favoritos se guardan localmente en tu navegador. Puedes guardar hasta 20." },
-    btnClearFavs: { en: "Clear All Favorites", es: "Limpiar Todos los Favoritos" },
-    titleFavs: { en: "Saved Favorites", es: "Favoritos Guardados" },
-    titleImage: { en: "Image Reference (Optional)", es: "Referencia de Imagen (Opcional)" },
-    imageTip: { en: "Drag or click to add an image that will be saved with the prompt.", es: "Arrastra o haz click para añadir una imagen que se guardará junto con el prompt." },
-    dropText: { en: "Drag or click to upload an image", es: "Arrastra o haz click para subir una imagen" },
-    clearFavsConfirm: { en: "Are you sure you want to clear all favorites?", es: "¿Estás seguro de que deseas eliminar todos los favoritos?" },
-    savedImage: { en: "Prompt and image saved!", es: "¡Prompt e imagen guardados!" },
-    langEn: { en: "English", es: "Inglés" },
-    langEs: { en: "Spanish", es: "Español" }
+    title: { en: "Abstract Art Prompt Generator", es: "Generador de Prompts de Arte Abstracto" },
+    subtitle: { en: "Shapes, Colors, and 2D Abstraction Styles (v1.9 - Pantone Pro)", es: "Figuras, Colores y Estilos de Abstracción 2D (v1.9 - Pantone Pro)" },
+    resultsTitle: { en: "Results", es: "Resultados" },
+    btnRandom: { en: "🎲 Randomize", es: "🎲 Aleatorio" },
+    btnReset: { en: "🧹 Reset", es: "🧹 Resetear" },
+    btnGenerate: { en: "✨ Generate Prompt", es: "✨ Generar Prompt" },
+    btnSave: { en: "Save Prompt", es: "Guardar Prompt" },
+    outLabel: { en: "PROMPT (CLICK TO COPY ENGLISH)", es: "PROMPT (CLIC PARA COPIAR INGLÉS)" },
+    uploadTitle: { en: "Save Image & Prompt", es: "Guardar Imagen y Prompt" },
+    uploadHint: { en: "If you generated an image with the current prompt, upload it here to save it together.", es: "Si has generado una imagen con el prompt actual, súbela aquí para guardarla junto al prompt." },
+    dropText: { en: "Drag & drop your image here or click to select.", es: "Arrastra y suelta tu imagen aquí o haz clic para seleccionarla." },
+    btnSaveWithImg: { en: "💾 Save Prompt & Image", es: "💾 Guardar Prompt e Imagen" },
+    secGeo: { en: "Geometry & Pattern", es: "Geometría y Patrón" },
+    lblShape: { en: "Base Shapes", es: "Formas Base" },
+    lblPattern: { en: "Pattern/Arrangement", es: "Patrón/Arreglo" },
+    lblSize: { en: "Size Variation", es: "Variación de Tamaño" },
+    lblDisp: { en: "Disposition/Order", es: "Disposición/Orden" },
+    lblEdge: { en: "Edges/Outlines", es: "Bordes/Contornos" },
+    lblDistort: { en: "Distortion", es: "Distorsión" },
+    lblDensity: { en: "Density (1-10)", es: "Densidad (1-10)" },
+    secColor: { en: "Colors & Palette (Pantone)", es: "Colores y Paleta (Pantone)" },
+    lblPalette: { en: "Color Palette", es: "Paleta de Color" },
+    lblDistrib: { en: "Distribution", es: "Distribución de Color" },
+    lblLum: { en: "Luminosity/Tone", es: "Luminosidad/Tono" },
+    lblPreview: { en: "Palette Preview (10 Colors)", es: "Previsualización (10 Colores)" },
+    secStyle: { en: "Style, Technique & Artist", es: "Estilo, Técnica y Artista" },
+    lblStyle: { en: "Main Style", es: "Estilo Principal" },
+    lblTech: { en: "Technique (Paint)", es: "Técnica (Pintura)" },
+    lblArtist: { en: "Inspired by", es: "Inspirado en" },
+    lblOrigin: { en: "Conceptual Origin", es: "Origen Conceptual" },
+    secFinish: { en: "Composition & Finish", es: "Composición y Acabado" },
+    lblComp: { en: "Composition", es: "Composición General" },
+    lblTexture: { en: "Canvas Texture", es: "Textura del Lienzo" },
+    lblFinish: { en: "Final Finish", es: "Acabado Final" },
+    lblRes: { en: "Resolution/Detail", es: "Resolución/Detalle" },
+    secLight: { en: "Lighting & Atmosphere", es: "Iluminación y Ambiente" },
+    lblLight: { en: "Lighting Type", es: "Tipo de Iluminación" },
+    lblAngle: { en: "Lighting Angle (º)", es: "Ángulo de Iluminación (º)" },
+    secFav: { en: "Saved Prompts", es: "Prompts Guardados" },
+    noFav: { en: "No saved prompts yet.", es: "No hay prompts guardados aún." },
+    copyMsg: { en: "📋 English Prompt Copied!", es: "📋 ¡Prompt en Inglés Copiado!" },
+    langBtn: { en: "🇪🇸 ESPAÑOL", es: "🇺🇸 ENGLISH" }
   };
 
-  // --- UTILITIES ---
-  const byId = id => document.getElementById(id);
-  const STORAGE_KEY = 'abstractPrompts';
-  const MAX_FAVORITES = 20;
+  // --- 30 PANTONE PALETTES DATA ---
+  const CPaleta = [
+    {id:'none', es:'Ninguno/Al Azar', en:'None/Random', colors_es:'', colors_en:''},
+    {id:'p1', es:'1. Atardecer Cibernético', en:'1. Cyber Sunset', 
+     colors_es: 'Pantone 219 C (Rosa intenso), Pantone 2151 C (Magenta púrpura), Pantone 2196 C (Azul oscuro digital), Pantone 2145 C (Azul eléctrico), Pantone 2263 C (Turquesa frío), Pantone 2270 C (Verde neón), Pantone 123 C (Amarillo cálido), Pantone 172 C (Naranja vivo), Pantone 7625 C (Coral fuerte), Pantone Black 6 C (Negro profundo)',
+     colors_en: 'Pantone 219 C (Hot Pink), Pantone 2151 C (Magenta Purple), Pantone 2196 C (Dark Digital Blue), Pantone 2145 C (Electric Blue), Pantone 2263 C (Cold Turquoise), Pantone 2270 C (Neon Green), Pantone 123 C (Warm Yellow), Pantone 172 C (Vivid Orange), Pantone 7625 C (Strong Coral), Pantone Black 6 C (Deep Black)'},
+    {id:'p2', es:'2. Alba Mediterránea', en:'2. Mediterranean Dawn',
+     colors_es: 'Pantone 2003 C (Naranja suave), Pantone 7406 C (Amarillo arena), Pantone 1205 C (Crema cálido), Pantone 7548 C (Amarillo sol), Pantone 2026 C (Coral melocotón), Pantone 7416 C (Salmón), Pantone 2336 C (Azul cielo), Pantone 2177 C (Azul mar), Pantone 321 C (Turquesa marino), Pantone 560 C (Verde oscuro)',
+     colors_en: 'Pantone 2003 C (Soft Orange), Pantone 7406 C (Sand Yellow), Pantone 1205 C (Warm Cream), Pantone 7548 C (Sun Yellow), Pantone 2026 C (Peach Coral), Pantone 7416 C (Salmon), Pantone 2336 C (Sky Blue), Pantone 2177 C (Sea Blue), Pantone 321 C (Marine Turquoise), Pantone 560 C (Dark Green)'},
+    {id:'p3', es:'3. Neón Subterráneo', en:'3. Underground Neon',
+     colors_es: 'Pantone 802 C (Verde neón), Pantone 806 C (Magenta fluorescente), Pantone 807 C (Rosa púrpura neón), Pantone 801 C (Azul fluorescente), Pantone 123 C (Amarillo vibrante), Pantone 1655 C (Naranja intenso), Pantone 226 C (Magenta puro), Pantone 2935 C (Cobalto), Pantone 355 C (Verde hierba intenso), Pantone Neutral Black C (Negro base)',
+     colors_en: 'Pantone 802 C (Neon Green), Pantone 806 C (Fluorescent Magenta), Pantone 807 C (Neon Purple Pink), Pantone 801 C (Fluorescent Blue), Pantone 123 C (Vibrant Yellow), Pantone 1655 C (Intense Orange), Pantone 226 C (Pure Magenta), Pantone 2935 C (Cobalt), Pantone 355 C (Intense Grass Green), Pantone Neutral Black C (Base Black)'},
+    {id:'p4', es:'4. Bosque Húmedo Profundo', en:'4. Deep Humid Forest',
+     colors_es: 'Pantone 5545 C (Verde grisáceo), Pantone 5605 C (Verde musgo), Pantone 5535 C (Verde bosque), Pantone 5747 C (Verde oliva apagado), Pantone 7763 C (Oliva cálido), Pantone 371 C (Verde tierra), Pantone 7567 C (Marrón arcilla), Pantone 7554 C (Marrón profundo), Pantone 7497 C (Caqui grisáceo), Pantone 7498 C (Musgo oscuro)',
+     colors_en: 'Pantone 5545 C (Grayish Green), Pantone 5605 C (Moss Green), Pantone 5535 C (Forest Green), Pantone 5747 C (Muted Olive Green), Pantone 7763 C (Warm Olive), Pantone 371 C (Earth Green), Pantone 7567 C (Clay Brown), Pantone 7554 C (Deep Brown), Pantone 7497 C (Grayish Khaki), Pantone 7498 C (Dark Moss)'},
+    {id:'p5', es:'5. Retro 80s Pastel-Tech', en:'5. Retro 80s Pastel-Tech',
+     colors_es: 'Pantone 3242 C (Menta pastel), Pantone 708 C (Rosa chicle claro), Pantone 7605 C (Coral pastel), Pantone 602 C (Amarillo pastel suave), Pantone 2727 C (Azul pastel saturado), Pantone 290 C (Azul hielo), Pantone 244 C (Lila rosa), Pantone 2567 C (Lila frío), Pantone 310 C (Cian pastel), Pantone Cool Gray 4 C (Gris frío suave)',
+     colors_en: 'Pantone 3242 C (Pastel Mint), Pantone 708 C (Light Bubblegum Pink), Pantone 7605 C (Pastel Coral), Pantone 602 C (Soft Pastel Yellow), Pantone 2727 C (Saturated Pastel Blue), Pantone 290 C (Ice Blue), Pantone 244 C (Pink Lilac), Pantone 2567 C (Cold Lilac), Pantone 310 C (Pastel Cyan), Pantone Cool Gray 4 C (Soft Cool Gray)'},
+    {id:'p6', es:'6. Tierra Vulcánica', en:'6. Volcanic Earth',
+     colors_es: 'Pantone 7596 C (Rojo óxido), Pantone 7608 C (Rojo quemado), Pantone 470 C (Tierra tostada), Pantone 168 C (Marrón volcánico), Pantone 7519 C (Chocolate profundo), Pantone 7568 C (Cobre apagado), Pantone 1385 C (Naranja caldera), Pantone 1615 C (Teja oscura), Pantone 7517 C (Terracota), Pantone 419 C (Negro volcánico)',
+     colors_en: 'Pantone 7596 C (Rust Red), Pantone 7608 C (Burnt Red), Pantone 470 C (Toasted Earth), Pantone 168 C (Volcanic Brown), Pantone 7519 C (Deep Chocolate), Pantone 7568 C (Muted Copper), Pantone 1385 C (Boiler Orange), Pantone 1615 C (Dark Tile), Pantone 7517 C (Terracotta), Pantone 419 C (Volcanic Black)'},
+    {id:'p7', es:'7. Polar Minimalista', en:'7. Minimalist Polar',
+     colors_es: 'Pantone 7541 C (Blanco grisáceo), Pantone 656 C (Azul hielo tenue), Pantone 5523 C (Azul gris pastel), Pantone 538 C (Gris helado), Pantone 2905 C (Azul claro puro), Pantone 2176 C (Azul acero), Pantone 5415 C (Azul polar), Pantone 7543 C (Gris neutro suave), Pantone 445 C (Gris profundo), Pantone Black 7 C (Negro frío mate)',
+     colors_en: 'Pantone 7541 C (Grayish White), Pantone 656 C (Faint Ice Blue), Pantone 5523 C (Pastel Gray Blue), Pantone 538 C (Icy Gray), Pantone 2905 C (Pure Light Blue), Pantone 2176 C (Steel Blue), Pantone 5415 C (Polar Blue), Pantone 7543 C (Soft Neutral Gray), Pantone 445 C (Deep Gray), Pantone Black 7 C (Matte Cold Black)'},
+    {id:'p8', es:'8. Aurora Boreal', en:'8. Aurora Borealis',
+     colors_es: 'Pantone 3395 C (Verde brillante), Pantone 3262 C (Turquesa), Pantone 322 C (Verde azulado profundo), Pantone 2736 C (Azul púrpura), Pantone 267 C (Violeta saturado), Pantone 2602 C (Púrpura eléctrico), Pantone 2385 C (Magenta frío), Pantone 7488 C (Verde luz), Pantone 3278 C (Turquesa neón), Pantone 273 C (Violeta noche)',
+     colors_en: 'Pantone 3395 C (Bright Green), Pantone 3262 C (Turquoise), Pantone 322 C (Deep Teal), Pantone 2736 C (Purple Blue), Pantone 267 C (Saturated Violet), Pantone 2602 C (Electric Purple), Pantone 2385 C (Cold Magenta), Pantone 7488 C (Light Green), Pantone 3278 C (Neon Turquoise), Pantone 273 C (Night Violet)'},
+    {id:'p9', es:'9. Barroco Elegante', en:'9. Elegant Baroque',
+     colors_es: 'Pantone 871 C (Dorado metálico), Pantone 7527 C (Crema gris), Pantone 2309 C (Gris piedra cálido), Pantone 7503 C (Topo elegante), Pantone 7531 C (Marrón grisáceo), Pantone 432 C (Gris carbón), Pantone 5535 C (Verde botella profundo), Pantone 2735 C (Violeta real), Pantone 7623 C (Rojo vino), Pantone 419 C (Negro noche)',
+     colors_en: 'Pantone 871 C (Metallic Gold), Pantone 7527 C (Gray Cream), Pantone 2309 C (Warm Stone Gray), Pantone 7503 C (Elegant Taupe), Pantone 7531 C (Grayish Brown), Pantone 432 C (Charcoal Gray), Pantone 5535 C (Deep Bottle Green), Pantone 2735 C (Royal Violet), Pantone 7623 C (Wine Red), Pantone 419 C (Night Black)'},
+    {id:'p10', es:'10. Caribe Saturado', en:'10. Saturated Caribbean',
+     colors_es: 'Pantone 3268 C (Turquesa saturado), Pantone 312 C (Cian tropical), Pantone 299 C (Azul vibrante), Pantone 3145 C (Azul océano), Pantone 7579 C (Coral intenso), Pantone 7415 C (Melocotón suave), Pantone 7408 C (Amarillo sol vibrante), Pantone 2254 C (Verde lima), Pantone 7737 C (Verde tropical), Pantone 2757 C (Azul profundo)',
+     colors_en: 'Pantone 3268 C (Saturated Turquoise), Pantone 312 C (Tropical Cyan), Pantone 299 C (Vibrant Blue), Pantone 3145 C (Ocean Blue), Pantone 7579 C (Intense Coral), Pantone 7415 C (Soft Peach), Pantone 7408 C (Vibrant Sun Yellow), Pantone 2254 C (Lime Green), Pantone 7737 C (Tropical Green), Pantone 2757 C (Deep Blue)'},
+    {id:'p11', es:'11. Monocromo Absoluto (Grises)', en:'11. Absolute Monochrome (Greys)',
+     colors_es: 'Pantone Cool Gray 1 C a 9 C + Black 6 C', colors_en: 'Pantone Cool Gray 1 C to 9 C + Black 6 C (Full Grey Scale)'},
+    {id:'p12', es:'12. Fuego Primario (Rojos)', en:'12. Primary Fire (Reds)',
+     colors_es: 'Gama completa de Rojos Pantone (1787 C, 1788 C, 186 C, 1785 C, 485 C, 7625 C, 7626 C, 7627 C, 7628 C, 1815 C)', colors_en: 'Full range of Pantone Reds (1787 C, 1788 C, 186 C, 1785 C, 485 C, 7625 C, 7626 C, 7627 C, 7628 C, 1815 C)'},
+    {id:'p13', es:'13. Profundidad Oceánica (Azules)', en:'13. Ocean Depth (Blues)',
+     colors_es: 'Gama completa de Azules Pantone (290 C, 291 C, 292 C, 300 C, 301 C, 302 C, 2176 C, 541 C, 540 C, 5395 C)', colors_en: 'Full range of Pantone Blues (290 C, 291 C, 292 C, 300 C, 301 C, 302 C, 2176 C, 541 C, 540 C, 5395 C)'},
+    {id:'p14', es:'14. Selva Vertical (Verdes)', en:'14. Vertical Jungle (Greens)',
+     colors_es: 'Gama completa de Verdes Pantone (358 C, 360 C, 361 C, 362 C, 363 C, 364 C, 355 C, 7484 C, 7736 C, 350 C)', colors_en: 'Full range of Pantone Greens (358 C, 360 C, 361 C, 362 C, 363 C, 364 C, 355 C, 7484 C, 7736 C, 350 C)'},
+    {id:'p15', es:'15. Solar Extendido (Amarillos)', en:'15. Extended Solar (Yellows)',
+     colors_es: 'Gama completa de Amarillos Pantone (393 C, 394 C, 395 C, 396 C, 7406 C, 7548 C, 123 C, 115 C, 109 C, 7408 C)', colors_en: 'Full range of Pantone Yellows (393 C, 394 C, 395 C, 396 C, 7406 C, 7548 C, 123 C, 115 C, 109 C, 7408 C)'},
+    {id:'p16', es:'16. Violeta Dinámico', en:'16. Dynamic Violet', colors_es:'Pantone 2562 C, 2572 C, 2582 C, 2592 C, 2602 C, 2612 C, 2623 C, 2685 C, 2735 C, 2765 C', colors_en:'Pantone 2562 C, 2572 C, 2582 C, 2592 C, 2602 C, 2612 C, 2623 C, 2685 C, 2735 C, 2765 C'},
+    {id:'p17', es:'17. Arena & Piedra', en:'17. Sand & Stone', colors_es:'Pantone 7401 C, 4685 C, 468 C, 4655 C, 7514 C, 465 C, 728 C, 730 C, 465 C, 7503 C', colors_en:'Pantone 7401 C, 4685 C, 468 C, 4655 C, 7514 C, 465 C, 728 C, 730 C, 465 C, 7503 C'},
+    {id:'p18', es:'18. Blueprint Digital', en:'18. Digital Blueprint', colors_es:'Pantone 2177 C, 2132 C, 2194 C, 2196 C, 2133 C, 2154 C, 2383 C, 7693 C, 2145 C, 295 C', colors_en:'Pantone 2177 C, 2132 C, 2194 C, 2196 C, 2133 C, 2154 C, 2383 C, 7693 C, 2145 C, 295 C'},
+    {id:'p19', es:'19. Menta Industrial', en:'19. Industrial Mint', colors_es:'Pantone 3242 C, 3252 C, 3262 C, 3272 C, 3282 C, 3292 C, 7710 C, 7712 C, 7714 C, 7716 C', colors_en:'Pantone 3242 C, 3252 C, 3262 C, 3272 C, 3282 C, 3292 C, 7710 C, 7712 C, 7714 C, 7716 C'},
+    {id:'p20', es:'20. Cítrico Exagerado', en:'20. Exaggerated Citrus', colors_es:'Pantone 1375 C, 1385 C, 1505 C, 1525 C, 1655 C, 1665 C, 172 C, 173 C, 174 C, 7579 C', colors_en:'Pantone 1375 C, 1385 C, 1505 C, 1525 C, 1655 C, 1665 C, 172 C, 173 C, 174 C, 7579 C'},
+    {id:'p21', es:'21. Arcilla Antigua', en:'21. Ancient Clay', colors_es:'Pantone 728 C, 729 C, 730 C, 7525 C, 7526 C, 7517 C, 7519 C, 168 C, 1615 C, 7596 C', colors_en:'Pantone 728 C, 729 C, 730 C, 7525 C, 7526 C, 7517 C, 7519 C, 168 C, 1615 C, 7596 C'},
+    {id:'p22', es:'22. Metal Mate Moderno', en:'22. Modern Matte Metal', colors_es:'Pantone 7534 C, 7535 C, 7536 C, 445 C, 446 C, 447 C, 418 C, 440 C, 7533 C, Black 7 C', colors_en:'Pantone 7534 C, 7535 C, 7536 C, 445 C, 446 C, 447 C, 418 C, 440 C, 7533 C, Black 7 C'},
+    {id:'p23', es:'23. Sorbet Minimal', en:'23. Minimal Sorbet', colors_es:'Pantone 705 C, 706 C, 707 C, 708 C, 7401 C, 7402 C, 7403 C, 628 C, 629 C, 630 C', colors_en:'Pantone 705 C, 706 C, 707 C, 708 C, 7401 C, 7402 C, 7403 C, 628 C, 629 C, 630 C'},
+    {id:'p24', es:'24. Vintage Sunset', en:'24. Vintage Sunset', colors_es:'Pantone 150 C, 151 C, 152 C, 153 C, 154 C, 155 C, 7581 C, 7582 C, 7583 C, 7584 C', colors_en:'Pantone 150 C, 151 C, 152 C, 153 C, 154 C, 155 C, 7581 C, 7582 C, 7583 C, 7584 C'},
+    {id:'p25', es:'25. Frío Tecnológico', en:'25. Technological Cold', colors_es:'Pantone 290 C, 2905 C, 291 C, 2915 C, 292 C, 2925 C, 293 C, 2935 C, 294 C, 2945 C', colors_en:'Pantone 290 C, 2905 C, 291 C, 2915 C, 292 C, 2925 C, 293 C, 2935 C, 294 C, 2945 C'},
+    {id:'p26', es:'26. Cielos de Tormenta', en:'26. Stormy Skies', colors_es:'Pantone 5493 C, 5497 C, 541 C, 542 C, 543 C, 544 C, 545 C, 546 C, 547 C, 548 C', colors_en:'Pantone 5493 C, 5497 C, 541 C, 542 C, 543 C, 544 C, 545 C, 546 C, 547 C, 548 C'},
+    {id:'p27', es:'27. Azul Marítimo Suave', en:'27. Soft Maritime Blue', colors_es:'Pantone 656 C, 657 C, 658 C, 659 C, 660 C, 661 C, 662 C, 7451 C, 7452 C, 7453 C', colors_en:'Pantone 656 C, 657 C, 658 C, 659 C, 660 C, 661 C, 662 C, 7451 C, 7452 C, 7453 C'},
+    {id:'p28', es:'28. Olivo Viejo', en:'28. Old Olive', colors_es:'Pantone 7493 C, 7494 C, 7495 C, 7496 C, 7497 C, 7498 C, 450 C, 451 C, 452 C, 574 C', colors_en:'Pantone 7493 C, 7494 C, 7495 C, 7496 C, 7497 C, 7498 C, 450 C, 451 C, 452 C, 574 C'},
+    {id:'p29', es:'29. Mostaza & Miel', en:'29. Mustard & Honey', colors_es:'Pantone 7751 C, 7752 C, 7753 C, 7754 C, 1245 C, 7555 C, 7550 C, 7407 C, 141 C, 7408 C', colors_en:'Pantone 7751 C, 7752 C, 7753 C, 7754 C, 1245 C, 7555 C, 7550 C, 7407 C, 141 C, 7408 C'},
+    {id:'p30', es:'30. RGB Expandido', en:'30. Expanded RGB', colors_es:'Pantone 185 C, 1788 C, 300 C, 3005 C, 354 C, 347 C, Process Yellow C, 123 C, Process Cyan C, Process Magenta C', colors_en:'Pantone 185 C, 1788 C, 300 C, 3005 C, 354 C, 347 C, Process Yellow C, 123 C, Process Cyan C, Process Magenta C'}
+  ];
+  
+  // --- OPTIONS DATA ARRAYS ---
+  const AForma = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'circles',es:'Círculos y Curvas',en:'Circles and Curves'},
+    {id:'squares',es:'Cuadrados y Rectángulos',en:'Squares and Rectangles'},
+    {id:'triangles',es:'Triángulos y Formas Angulares',en:'Triangles and Angular Shapes'},
+    {id:'lines',es:'Solo Líneas y Trazos',en:'Only Lines and Strokes'},
+    {id:'organic',es:'Formas Orgánicas/Biológicas',en:'Organic/Biological Shapes'},
+    {id:'mix',es:'Mezcla de todas las formas',en:'Mix of all shapes'},
+  ];
+  const APatron = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'grid',es:'Patrón de rejilla/Grid',en:'Grid pattern/Tiled'},
+    {id:'concentric',es:'Patrón concéntrico',en:'Concentric pattern'},
+    {id:'scattered',es:'Patrón disperso/scattered',en:'Scattered pattern'},
+    {id:'stacked',es:'Apilado/Stacked',en:'Stacked arrangement'},
+    {id:'maze',es:'Laberinto/Maze-like',en:'Maze-like pattern'},
+    {id:'geometric_tiling',es:'Mosaico geométrico',en:'Geometric tiling'},
+  ];
+  const ATamano = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'dots_to_large',es:'Desde puntos minúsculos a figuras grandes',en:'From tiny dots to large shapes'},
+    {id:'varied_random',es:'Tamaños variados y aleatorios',en:'Varied and random sizes'},
+    {id:'gradual_scale',es:'Gradual, escalado (gradiente de tamaño)',en:'Gradual, scaled (size gradient)'},
+    {id:'tiny_dots',es:'Solo puntos minúsculos y dispersos',en:'Only tiny, scattered dots'},
+    {id:'uniform',es:'Tamaño uniforme',en:'Uniform size'},
+  ];
+  const ADisp = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'defined',es:'Orden definido/preciso',en:'Defined/precise order'},
+    {id:'random',es:'Orden aleatorio/caótico',en:'Random/chaotic order'},
+    {id:'clustered',es:'Agrupado/cluster',en:'Clustered arrangement'},
+  ];
+  const ABorde = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'sharp',es:'Bordes afilados/duros',en:'Sharp/hard edges'},
+    {id:'soft',es:'Bordes suaves/difusos',en:'Soft/diffused edges'},
+    {id:'outlined',es:'Con contorno negro/grueso',en:'With thick black outline'},
+  ];
+  const ADistor = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'wavy',es:'Ondulado/Wavy',en:'Wavy/undulating distortion'},
+    {id:'melted',es:'Derretido/Diluido (Melted/Diluted)',en:'Melted/Diluted distortion'},
+    {id:'pixelated',es:'Pixelado/Fragmentado',en:'Pixelated/Fragmented distortion'},
+    {id:'glitch',es:'Glitch/Error digital',en:'Glitch/digital error effect'}
+  ];
+  const CDistrib = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'even',es:'Distribución uniforme',en:'Even distribution of colors'},
+    {id:'random',es:'Distribución aleatoria',en:'Random distribution of colors'},
+    {id:'gradient',es:'Gradiente/Transición',en:'Color gradient/transition'},
+  ];
+  const CLum = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'bright',es:'Brillante y alto contraste',en:'Bright and high contrast'},
+    {id:'muted',es:'Apagado y bajo contraste',en:'Muted and low contrast'},
+    {id:'dark_moody',es:'Oscuro y moody',en:'Dark and moody atmosphere'},
+  ];
+  const EEstilo = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'geometric',es:'Abstracción Geométrica',en:'Geometric Abstraction (Neoplasticism)'},
+    {id:'lyrical',es:'Abstracción Lírica',en:'Lyrical Abstraction (Fluid gesture)'},
+    {id:'expressionism',es:'Expresionismo Abstracto',en:'Abstract Expressionism (Action Painting)'},
+    {id:'minimalism',es:'Minimalismo Reductivo',en:'Reductive Minimalism'},
+    {id:'opart',es:'Op Art / Ilusión óptica',en:'Op Art / Optical illusion'},
+    {id:'suprematism',es:'Suprematismo (Malévich)',en:'Suprematism (Malevich)'},
+    {id:'constructivism',es:'Constructivismo',en:'Constructivism'},
+  ];
+  const ETecnica = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'acrylic',es:'Pintura Acrílica',en:'Acrylic paint'},
+    {id:'oil',es:'Óleo/Oil paint',en:'Oil paint'},
+    {id:'watercolor',es:'Acuarela/Watercolor',en:'Watercolor painting'},
+    {id:'digital_vector',es:'Vector Digital / Ilustración Plana',en:'Digital Vector / Flat Illustration'},
+    {id:'mixed_media',es:'Medios Mixtos/Collage',en:'Mixed Media / Collage'},
+    {id:'ink_splatter',es:'Salpicadura de Tinta/Ink Splatter',en:'Ink Splatter'},
+  ];
+  const EArtista = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'mondrian',es:'Piet Mondrian',en:'Piet Mondrian'},
+    {id:'kandinsky',es:'Wassily Kandinsky',en:'Wassily Kandinsky'},
+    {id:'pollock',es:'Jackson Pollock',en:'Jackson Pollock'},
+    {id:'rothko',es:'Mark Rothko',en:'Mark Rothko'},
+    {id:'klee',es:'Paul Klee',en:'Paul Klee'},
+    {id:'albers',es:'Josef Albers',en:'Josef Albers'},
+    {id:'lichtenstein',es:'Roy Lichtenstein',en:'Roy Lichtenstein'},
+  ];
+  const EOrigen = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'organic_nature',es:'Origen Orgánico/Naturaleza',en:'Organic/Nature-inspired'},
+    {id:'architecture',es:'Arquitectura/Diseño Industrial',en:'Architecture/Industrial Design'},
+    {id:'musical_harmony',es:'Armonía Musical/Sonora',en:'Musical/Sound Harmony'},
+    {id:'mathematics',es:'Principios Matemáticos',en:'Mathematical Principles'},
+    {id:'spiritual_zen',es:'Espiritual/Zen',en:'Spiritual/Zen principles'},
+  ];
+  const FComp = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'symmetrical',es:'Composición simétrica',en:'Symmetrical composition'},
+    {id:'asymmetrical',es:'Composición asimétrica',en:'Asymmetrical composition'},
+    {id:'dynamic_diagonal',es:'Dinámica con diagonales',en:'Dynamic diagonal composition'},
+    {id:'vertical_focus',es:'Foco en la verticalidad',en:'Vertical focus composition'},
+    {id:'horizontal_calm',es:'Calma horizontal',en:'Horizontal calm composition'},
+    {id:'central_vortex',es:'Vórtice central',en:'Central vortex composition'},
+  ];
+  const FTextura = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'rough_canvas',es:'Lienzo grueso/texturizado',en:'Rough/textured canvas'},
+    {id:'smooth_panel',es:'Panel liso/Smooth panel',en:'Smooth panel/surface'},
+    {id:'paper_aquarelle',es:'Papel de acuarela',en:'Aquarelle paper'},
+    {id:'high_gloss_resin',es:'Resina de alto brillo',en:'High gloss resin'},
+  ];
+  const FAcabado = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'glossy',es:'Acabado brillante/glossy',en:'Glossy/high-shine finish'},
+    {id:'semi_gloss',es:'Acabado semibrillante',en:'Semi-gloss finish'},
+    {id:'matte',es:'Acabado mate',en:'Matte/non-reflective finish'},
+    {id:'vintage',es:'Vintage/con pátina',en:'Vintage/patina finish'},
+  ];
+  const FRes = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'8k',es:'Detalle extremo (8K)',en:'Extreme detail (8K)'},
+    {id:'4k',es:'Alta resolución (4K)',en:'High resolution (4K)'},
+    {id:'hd',es:'Alta calidad (HD)',en:'High quality (HD)'},
+  ];
+  const ILum = [
+    {id:'none',es:'Ninguno/Al Azar',en:'None/Random'},
+    {id:'frontal',es:'Frontal/Dura',en:'Frontal/Hard lighting'},
+    {id:'lateral',es:'Lateral/Sombra Larga',en:'Lateral lighting/Long shadow'},
+    {id:'superior',es:'Cenital/Superior',en:'Overhead/Top lighting'},
+    {id:'inferior',es:'Contrapicado/Inferior',en:'Underlight/Bottom lighting'},
+    {id:'angulada',es:'Angulada (usar Angulo º)',en:'Angled lighting (use Angle º)'},
+    {id:'backlight',es:'Contraluz/Silueta',en:'Backlighting/Silhouette'}
+  ];
+  
+  // --- UTILITY CONSTANTS ---
+  const LIGHTING_DEFAULTS = { 
+    'frontal': 45, 'lateral': 90, 'superior': 0, 'inferior': 180, 'backlight': 180, 'angulada': 45, 'none': 45 
+  };
+  
+  const CONTROLS_MAP = [
+    { id: 'aForma', options: AForma },
+    { id: 'aPatron', options: APatron },
+    { id: 'aTamano', options: ATamano },
+    { id: 'aDisp', options: ADisp },
+    { id: 'aBorde', options: ABorde },
+    { id: 'aDistor', options: ADistor },
+    { id: 'aCount', type: 'number', min: 1, max: 10, default: 5 },
+    { id: 'cPaleta', options: CPaleta },
+    { id: 'cDistrib', options: CDistrib },
+    { id: 'cLum', options: CLum },
+    { id: 'eEstilo', options: EEstilo },
+    { id: 'eTecnica', options: ETecnica },
+    { id: 'eArtista', options: EArtista },
+    { id: 'eOrigen', options: EOrigen },
+    { id: 'fComp', options: FComp },
+    { id: 'fTextura', options: FTextura },
+    { id: 'fAcabado', options: FAcabado },
+    { id: 'fRes', options: FRes },
+    { id: 'iLum', options: ILum },
+    { id: 'iAngulo', type: 'number', min: 0, max: 360, default: 45 }
+  ];
 
-  function showNotification(msg) {
-      const notif = byId('notification');
-      notif.textContent = msg;
-      notif.classList.add('show');
-      setTimeout(() => {
-          notif.classList.remove('show');
-      }, 3000);
+  // --- HEX MAPPING FOR PREVIEW (10 Colors per palette) ---
+  const PALETTE_COLORS = {
+    'none': ['#444','#555','#666','#777','#888','#999','#AAA','#BBB','#CCC','#DDD'],
+    'p1': ['#DA1884','#9F0052','#1F2A44','#005587','#44B8AC','#84BD00','#FFC72C','#FA4616','#E03C31','#101820'], // Cyber
+    'p2': ['#FCA054','#F4C430','#F5E6CC','#FFD100','#FA8072','#F77F5B','#92C1E9','#0073CF','#008B95','#1D332D'], // Alba
+    'p3': ['#44D62C','#FF007C','#FF0099','#0099FF','#FFD700','#FF4F00','#D50032','#004C97','#009639','#232323'], // Neon
+    'p4': ['#5B6770','#4C5B49','#223828','#4E5B31','#7B7C46','#4B5F36','#8C4729','#4C3024','#6F685D','#474B39'], // Forest
+    'p5': ['#70C6A9','#FFA6C9','#F79585','#F6E98F','#83A9F5','#A7D1FF','#C397B8','#A597C3','#88D8C9','#B0B0B0'], // Retro
+    'p6': ['#C24935','#B33939','#6A382A','#4C2B2A','#321E19','#845D4B','#E46F25','#8D3F37','#A36B5E','#201B1D'], // Volcanic
+    'p7': ['#CFD3D6','#BDC2C7','#A6AEB3','#83868C','#4D9DE0','#1F5F8B','#1F587E','#A1A4A7','#666C70','#101820'], // Polar
+    'p8': ['#00A78F','#0099A0','#007B8C','#6E519B','#9540C6','#B130E0','#DB6EB1','#98B648','#00B2A9','#342C44'], // Aurora
+    'p9': ['#D2B785','#DCD0C0','#B6AE9C','#998E7A','#8C7862','#4C4C4C','#3E443F','#444C6A','#8B2332','#101820'], // Baroque
+    'p10': ['#00A99D','#00BFB2','#00C4FF','#00808F','#F78A62','#FFA388','#FFD100','#7EC845','#4AA52B','#1B2A49'], // Caribe
+    'p11': ['#EBEBEB','#CFCFCF','#B0B0B0','#969696','#808080','#696969','#555555','#444444','#363636','#101820'], // Monocromo
+    'p12': ['#EA594D','#D50032','#FF4F00','#D9004C','#C8102E','#D03433','#E23A3A','#E64C4C','#E85C5C','#841F2B'], // Fuego
+    'p13': ['#A7D1FF','#83A9F5','#5580D4','#004C97','#00407C','#1D304B','#1F5F8B','#0073CF','#006BB9','#1B2A49'], // Oceánica
+    'p14': ['#88D169','#7EC845','#5BBD2E','#4AA52B','#009639','#007849','#009444','#84BD00','#6AB023','#2E4A28'], // Selva
+    'p15': ['#F6E98F','#FFF000','#FFD100','#FFC72C','#FFCD00','#FFD700','#FFD700','#FCD133','#FDBB30','#FFD100'], // Solar
+    'p16': ['#995EC2','#A965D1','#BC73D6','#D082DB','#E03C31','#952792','#4F274F','#B65BBA','#802BB3','#4D285B'], // Violeta
+    'p17': ['#F5E6CC','#E2CCB5','#D6BCA8','#C2AF9A','#A99D8D','#A3978A','#E9CC7E','#E2C467','#D6BCA8','#998E7A'], // Arena
+    'p18': ['#1F5F8B','#006B97','#004489','#1F2A44','#004C97','#005587','#447799','#336699','#005587','#1B2A49'], // Blueprint
+    'p19': ['#70C6A9','#63B89E','#44B8AC','#32AC9E','#20A290','#109282','#3A948C','#5A9A95','#7BB2AF','#637877'], // Menta Industrial
+    'p20': ['#F3A712','#E46F25','#FFA300','#FF9900','#FF4F00','#FF3300','#FA4616','#E03C31','#D50032','#F78A62'], // Cítrico
+    'p21': ['#E9CC7E','#E2C467','#D6BCA8','#C3AA8E','#B29B7F','#A36B5E','#8C4729','#4C2B2A','#8D3F37','#C24935'], // Arcilla
+    'p22': ['#A1A4A7','#94979A','#83868C','#666C70','#555B60','#4C5357','#363B40','#444444','#55585B','#101820'], // Metal
+    'p23': ['#FFB6C1','#FFA6C9','#F79585','#FFC72C','#F5E6CC','#FFD100','#F77F5B','#C397B8','#A597C3','#88D8C9'], // Sorbet
+    'p24': ['#FCA054','#F77F5B','#F05B4D','#E23A3A','#D50032','#C8102E','#FA8072','#FFA388','#FFB6C1','#F6E98F'], // Vintage Sunset
+    'p25': ['#A7D1FF','#83A9F5','#5580D4','#4D9DE0','#1F5F8B','#004C97','#0073CF','#00407C','#1B2A49','#1F2A44'], // Frío Tecnológico
+    'p26': ['#B2C3C9','#A0B3BB','#88A0A8','#6F8890','#526F77','#3E5961','#2C4348','#1D3035','#102025','#000000'], // Tormenta
+    'p27': ['#BDC2C7','#A6AEB3','#919A9F','#7C868B','#667377','#526064','#404C50','#B2B9BB','#A0A7AA','#8F9699'], // Marítimo Suave
+    'p28': ['#E9E3C5','#DCD0B1','#CFC09E','#BDB08B','#A99D8D','#978B7A','#A99D8D','#978B7A','#847868','#706657'], // Olivo
+    'p29': ['#D2B785','#DCD0B1','#E9CC7E','#F3A712','#FFC72C','#FFD700','#FFD100','#FCD133','#FDBB30','#FFD700'], // Mostaza
+    'p30': ['#FF4F00','#D50032','#004C97','#4D9DE0','#009639','#007849','#FFD700','#FFC72C','#00C4FF','#FF007C'], // RGB Expandido
+  };
+
+  // --- APP CORE CLASS ---
+  const byId = id => document.getElementById(id);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  
+  function showNotification(message, type = 'success') {
+      const notification = byId('copyNotification');
+      if (!notification) return;
+      
+      notification.textContent = message;
+      notification.style.display = 'block';
+      
+      // Update background based on type
+      notification.style.backgroundColor = type === 'success' ? 'var(--success)' : (type === 'warning' ? 'var(--warning)' : 'var(--danger)');
+      
+      clearTimeout(notification.timer);
+      notification.timer = setTimeout(() => {
+          notification.style.display = 'none';
+      }, 2000);
   }
 
-  // --- GENERATOR CLASS ---
   class AbstractPromptGenerator {
     constructor() {
-      this.lang = localStorage.getItem('lang') || 'es'; // Default to Spanish
-      this.currentPromptEN = "";
-      this.initUI();
-      this.loadFavorites();
-      this.generatePrompt();
-    }
+      this.STATE = {};
+      this.lang = 'en'; // Default language: English
+      this.currentPromptEN = "Initializing...";
+      this.currentPromptES = "Inicializando...";
+      this.favorites = this.loadFavorites();
 
-    // Language Handling
-    updateUIStrings() {
-      document.querySelectorAll('[data-key]').forEach(element => {
-          const key = element.getAttribute('data-key');
-          if (UI_STRINGS[key]) {
-              if (element.tagName === 'BUTTON') {
-                element.textContent = UI_STRINGS[key][this.lang];
-              } else if (element.tagName === 'SPAN' || element.tagName === 'P') {
-                element.textContent = UI_STRINGS[key][this.lang];
-              } else if (element.tagName === 'PRE') {
-                element.dataset.copyMsg = UI_STRINGS.copyMsg[this.lang]; // Update copy message on output box
-              }
-          }
-      });
-
-      // Update dropdowns
-      this.populateSelects();
-    }
-
-    setLanguage(lang) {
-      this.lang = lang;
-      localStorage.setItem('lang', lang);
-      this.updateUIStrings();
-      this.generatePrompt(); // Regenerate prompt to reflect new language
-      this.loadFavorites(); // Reload favorites to update language
-    }
-
-    initLanguageSwitch() {
-      const langSwitch = byId('langSwitch');
-      langSwitch.innerHTML = `
-        <option value="es">${UI_STRINGS.langEs.es}</option>
-        <option value="en">${UI_STRINGS.langEn.es}</option>
-      `; // Options are always rendered with Spanish names for clarity
-
-      langSwitch.value = this.lang;
-
-      langSwitch.addEventListener('change', (e) => {
-        const newLang = e.target.value;
-        this.setLanguage(newLang);
-      });
-    }
-
-
-    // Favorites Handling
-    loadFavorites() {
-      const favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      const list = byId('favoritesList');
-      list.innerHTML = '';
-      
-      favs.forEach((fav, index) => {
-        const listItem = document.createElement('li');
-        listItem.className = 'fav-item';
-        
-        const text = document.createElement('span');
-        text.className = 'fav-text';
-        text.textContent = fav.prompt[this.lang] || fav.prompt.es; // Use current language
-        text.title = fav.prompt.en; // Show English as tooltip
-        text.addEventListener('click', () => {
-          this.copy(fav.prompt.en, UI_STRINGS.copyMsg[this.lang]);
-        });
-        
-        const actions = document.createElement('div');
-        actions.className = 'fav-actions';
-
-        if (fav.image) {
-            const img = document.createElement('img');
-            img.src = fav.image;
-            img.style.maxWidth = '50px';
-            img.style.maxHeight = '50px';
-            img.style.marginRight = '10px';
-            img.style.borderRadius = '5px';
-            listItem.insertBefore(img, text);
-        }
-        
-        const btnRemove = document.createElement('button');
-        btnRemove.className = 'btn btn-secondary';
-        btnRemove.textContent = 'X';
-        btnRemove.title = this.lang === 'es' ? 'Eliminar' : 'Remove';
-        btnRemove.addEventListener('click', () => this.removeFavorite(index));
-        
-        actions.appendChild(btnRemove);
-        listItem.appendChild(text);
-        listItem.appendChild(actions);
-        list.appendChild(listItem);
-      });
-    }
-
-    addFavorite() {
-      const favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      
-      // Check if prompt already exists (by English version)
-      const exists = favs.some(fav => fav.prompt.en === this.currentPromptEN);
-      if (exists) {
-        showNotification(this.lang === 'es' ? "Este prompt ya está en favoritos." : "This prompt is already in favorites.");
-        return;
-      }
-
-      if (favs.length >= MAX_FAVORITES) {
-        showNotification(this.lang === 'es' ? "Máximo de 20 favoritos alcanzado. Elimina algunos." : "Max 20 favorites reached. Remove some.");
-        return;
-      }
-
-      const currentPromptES = this.translateTo(this.currentPromptEN, 'es');
-      
-      favs.unshift({
-          prompt: { en: this.currentPromptEN, es: currentPromptES },
-          image: null // Placeholder for image
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
-      this.loadFavorites();
-      showNotification(UI_STRINGS.favAdded[this.lang]);
+      this.initDefaultState();
+      this.setupEventListeners();
+      this.populateUI();
+      this.setLanguage(localStorage.getItem('lang') || 'en'); // Use saved language
+      this.generatePromptsAndDisplay();
     }
     
-    saveWithImage() {
-        const fileInput = byId('imageUpload');
-        const file = fileInput.files[0];
+    // --- LANGUAGE HANDLER ---
+    setLanguage(newLang) {
+      this.lang = newLang;
+      localStorage.setItem('lang', newLang);
+      byId('langToggle').textContent = UI_STRINGS.langBtn[newLang];
+      this.updateUI();
+      this.updateStrings();
+      this.renderFavorites(); // Re-render favorites for language change
+    }
+
+    toggleLanguage() {
+      const newLang = this.lang === 'en' ? 'es' : 'en';
+      this.setLanguage(newLang);
+    }
+    
+    updateStrings() {
+      document.querySelectorAll('[data-key]').forEach(el => {
+        const key = el.getAttribute('data-key');
+        if (UI_STRINGS[key]) {
+          el.textContent = UI_STRINGS[key][this.lang];
+        }
+      });
+      const outLabel = byId('outLabel');
+      if(outLabel) outLabel.textContent = UI_STRINGS.outLabel[this.lang];
+    }
+
+    // --- STATE MANAGEMENT ---
+    initDefaultState() {
+      CONTROLS_MAP.forEach(c => {
+        if (c.options && c.options.length > 0) {
+          this.STATE[c.id] = c.options[0].id;
+        } else if (c.type === 'number') {
+          this.STATE[c.id] = c.default || 1;
+        }
+      });
+      // Set meaningful defaults
+      this.STATE['aForma'] = 'circles';
+      this.STATE['cPaleta'] = 'p1'; // Default to Cyber Sunset
+      this.STATE['eArtista'] = 'mondrian';
+    }
+
+    resetState() {
+      this.initDefaultState();
+      this.updateUI();
+      this.generatePromptsAndDisplay();
+      this.clearImageUpload();
+      showNotification(this.lang === 'en' ? '🧹 Config Reset' : '🧹 Configuración reseteada');
+    }
+
+    randomizeState() {
+      CONTROLS_MAP.forEach(c => {
+        if (c.options && c.options.length > 0) {
+          this.STATE[c.id] = pick(c.options).id;
+        } else if (c.type === 'number') {
+          const min = c.min || 1;
+          const max = c.max || 10;
+          this.STATE[c.id] = Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+      });
+      // Ensure angle matches illumination type for better prompts
+      this.STATE.iAngulo = LIGHTING_DEFAULTS[this.STATE.iLum] || LIGHTING_DEFAULTS['none'];
+      
+      this.updateUI();
+      this.generatePromptsAndDisplay();
+      this.clearImageUpload();
+      showNotification(this.lang === 'en' ? '🎲 Randomized!' : '🎲 ¡Aleatorio!');
+    }
+
+    // --- UI MANIPULATION ---
+    populateSelect(selectId, data) {
+      const select = byId(selectId);
+      if (!select) return;
+      select.innerHTML = '';
+      data.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item[this.lang];
+        select.appendChild(option);
+      });
+    }
+
+    populateUI() {
+      CONTROLS_MAP.forEach(c => {
+        if (c.options) {
+          this.populateSelect(c.id, c.options);
+        }
+      });
+      this.updateUI();
+      this.updatePalettePreview();
+    }
+
+    updateUI() {
+      CONTROLS_MAP.forEach(c => {
+        const element = byId(c.id);
+        if (element) {
+          element.value = this.STATE[c.id];
+        }
+      });
+      this.updateFavoriteButtonState();
+      this.updatePalettePreview();
+    }
+
+    updatePalettePreview() {
+      const paletaId = this.STATE.cPaleta;
+      const hexColors = PALETTE_COLORS[paletaId] || PALETTE_COLORS['none'];
+      const previewContainer = byId('palettePreview');
+      if (!previewContainer) return;
+      
+      previewContainer.innerHTML = '';
+      hexColors.forEach(color => {
+          const swatch = document.createElement('div');
+          swatch.className = 'color-swatch';
+          swatch.style.backgroundColor = color;
+          previewContainer.appendChild(swatch);
+      });
+    }
+
+    // --- PROMPT GENERATION LOGIC ---
+    getTerm(id, array, lang) {
+      const item = array.find(i => i.id === this.STATE[id]);
+      return item ? item[lang] : '';
+    }
+
+    generatePrompts() {
+      const S = this.STATE;
+      
+      // Get Pantone Color Descriptions
+      const paleta = CPaleta.find(p => p.id === S.cPaleta);
+      const colorDescEN = paleta ? paleta.colors_en : '';
+      const colorDescES = paleta ? paleta.colors_es : '';
+
+      // --- ENGLISH PROMPT CONSTRUCTION ---
+      const en = this.constructPrompt('en', S, colorDescEN);
+      // --- SPANISH PROMPT CONSTRUCTION ---
+      const es = this.constructPrompt('es', S, colorDescES);
+
+      return { en, es, state: JSON.stringify(S) };
+    }
+
+    constructPrompt(l, S, colorDesc) {
+      const basePrompt = l === 'es' ? "Una pintura abstracta en 2D" : "A 2D abstract painting";
+      const geoParts = [];
+      const colorParts = [];
+      const styleParts = [];
+      const finishParts = [];
+      const illumParts = [];
+
+      // 1. Geometry
+      if (S.aForma !== 'none') {
+        let geo = this.getTerm('aForma', AForma, l);
+        const aCount = S.aCount;
+        if(l === 'es') {
+          geo = (aCount > 5 ? 'alta densidad de ' : 'baja densidad de ') + geo;
+        } else {
+          geo = (aCount > 5 ? 'High density of ' : 'Low density of ') + geo;
+        }
+        geoParts.push(geo);
+      }
+      if (S.aPatron !== 'none') {
+        geoParts.push(l === 'es' ? `en un patrón de ${this.getTerm('aPatron', APatron, l)}` : `in a ${this.getTerm('aPatron', APatron, l)} pattern`);
+      }
+      if (S.aTamano !== 'none') {
+        geoParts.push(l === 'es' ? `con ${this.getTerm('aTamano', ATamano, l)}` : `with ${this.getTerm('aTamano', ATamano, l)}`);
+      }
+      if (S.aDisp !== 'none') {
+        geoParts.push(l === 'es' ? `y disposición ${this.getTerm('aDisp', ADisp, l)}` : `and ${this.getTerm('aDisp', ADisp, l)} arrangement`);
+      }
+      if (S.aBorde !== 'none') {
+        geoParts.push(this.getTerm('aBorde', ABorde, l));
+      }
+      if (S.aDistor !== 'none') {
+        geoParts.push(l === 'es' ? `con efecto de ${this.getTerm('aDistor', ADistor, l)}` : `with ${this.getTerm('aDistor', ADistor, l)} effect`);
+      }
+
+      let geo_phrase = geoParts.length > 0 ? geoParts.join(', ') : '';
+      if (geo_phrase) {
+        geo_phrase = (l === 'es' ? 'Geometría: ' : 'Geometry: ') + geo_phrase;
+      }
+
+      // 2. Colors (Pantone Logic)
+      if (S.cPaleta !== 'none') {
+        const paletaName = this.getTerm('cPaleta', CPaleta, l);
+        colorParts.push(l === 'es' ? `Paleta de color ${paletaName}` : `Color palette ${paletaName}`);
+      }
+      if (S.cDistrib !== 'none') {
+        colorParts.push(this.getTerm('cDistrib', CDistrib, l));
+      }
+      if (S.cLum !== 'none') {
+        colorParts.push(this.getTerm('cLum', CLum, l));
+      }
+      
+      let color_phrase = colorParts.length > 0 ? colorParts.join(', ') : '';
+      if (color_phrase) {
+        color_phrase = (l === 'es' ? 'Colores: ' : 'Colors: ') + color_phrase;
+      }
+
+      // 3. Style
+      if (S.eEstilo !== 'none') {
+        styleParts.push(l === 'es' ? `Estilo de ${this.getTerm('eEstilo', EEstilo, l)}` : `${this.getTerm('eEstilo', EEstilo, l)} style`);
+      }
+      if (S.eTecnica !== 'none') {
+        styleParts.push(l === 'es' ? `Técnica de ${this.getTerm('eTecnica', ETecnica, l)}` : `${this.getTerm('eTecnica', ETecnica, l)} technique`);
+      }
+      if (S.eArtista !== 'none') {
+        styleParts.push(l === 'es' ? `Inspirado en ${this.getTerm('eArtista', EArtista, l)}` : `Inspired by ${this.getTerm('eArtista', EArtista, l)}`);
+      }
+      if (S.eOrigen !== 'none') {
+        styleParts.push(l === 'es' ? `De ${this.getTerm('eOrigen', EOrigen, l)}` : `${this.getTerm('eOrigen', EOrigen, l)} conception`);
+      }
+      let style_phrase = styleParts.length > 0 ? styleParts.join('. ') : '';
+
+      // 4. Finish
+      if (S.fComp !== 'none') {
+        finishParts.push(l === 'es' ? `Composición: ${this.getTerm('fComp', FComp, l)}` : `Composition: ${this.getTerm('fComp', FComp, l)}`);
+      }
+      if (S.fTextura !== 'none') {
+        finishParts.push(l === 'es' ? `Textura de ${this.getTerm('fTextura', FTextura, l)}` : `${this.getTerm('fTextura', FTextura, l)} texture`);
+      }
+      if (S.fAcabado !== 'none') {
+        finishParts.push(l === 'es' ? `Acabado ${this.getTerm('fAcabado', FAcabado, l)}` : `${this.getTerm('fAcabado', FAcabado, l)} finish`);
+      }
+      if (S.fRes !== 'none') {
+        finishParts.push(this.getTerm('fRes', FRes, l));
+      }
+      let finish_phrase = finishParts.length > 0 ? finishParts.join(', ') : '';
+      
+      // 5. Lighting
+      if (S.iLum !== 'none') {
+        const iluminacion = this.getTerm('iLum', ILum, l);
+        let illum_detail;
+        if (S.iLum === 'angulada' || S.iLum !== 'frontal' && S.iLum !== 'superior' && S.iLum !== 'inferior' && S.iLum !== 'backlight') {
+          const angulo = S.iAngulo;
+          illum_detail = l === 'es' ? `angulada a ${angulo} grados` : `angled at ${angulo} degrees`;
+        } else {
+          illum_detail = iluminacion;
+        }
+        illumParts.push(l === 'es' ? `Iluminación ${illum_detail}` : `${illum_detail} lighting`);
+      }
+      let illum_phrase = illumParts.length > 0 ? illumParts.join(', ') : '';
+
+      // Combine parts
+      const sections = [geo_phrase, color_phrase, style_phrase, finish_phrase, illum_phrase].filter(p => p);
+      let finalPrompt = basePrompt;
+
+      if (sections.length > 0) {
+        finalPrompt += l === 'es' ? ', con los siguientes elementos: ' : ', with the following elements: ';
+        finalPrompt += sections.join(' | ');
+      }
+      
+      // Add the list of Pantone colors at the end
+      if (colorDesc) {
+        finalPrompt += (l === 'es' ? `. Colores Pantone específicos: ${colorDesc}` : `. Specific Pantone Colors: ${colorDesc}`);
+      }
+
+      // Add common fixed tags
+      finalPrompt += l === 'es' ? '. --ar 16:9' : '. --ar 16:9';
+
+      return finalPrompt;
+    }
+
+    generatePromptsAndDisplay() {
+      const prompts = this.generatePrompts();
+      this.currentPromptEN = prompts.en;
+      this.currentPromptES = prompts.es;
+      const outMain = byId('outMain');
+      if (outMain) {
+        outMain.textContent = this.lang === 'en' ? this.currentPromptEN : this.currentPromptES;
+      }
+      this.updateFavoriteButtonState();
+    }
+    
+    // --- FAVORITES LOGIC ---
+    loadFavorites() {
+      try {
+        const json = localStorage.getItem('abstractPrompts');
+        return json ? JSON.parse(json) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    
+    saveFavorites() {
+      try {
+        localStorage.setItem('abstractPrompts', JSON.stringify(this.favorites));
+        this.renderFavorites();
+      } catch (e) {
+        showNotification(this.lang === 'en' ? "LocalStorage Error" : "Error en LocalStorage", 'danger');
+      }
+    }
+
+    addFavorite(image = null) {
+      const prompts = this.generatePrompts();
+      const newFav = {
+        id: Date.now(),
+        state: prompts.state,
+        promptEN: prompts.en,
+        promptES: prompts.es,
+        timestamp: new Date().toLocaleString('es-ES'),
+        image: image || null 
+      };
+
+      if (this.favorites.some(fav => fav.promptEN === prompts.en && !fav.image)) {
+        showNotification(this.lang === 'en' ? "⚠️ Already saved." : "⚠️ Ya guardado.", 'warning');
+        return;
+      }
+      
+      this.favorites.unshift(newFav);
+      this.saveFavorites();
+      this.updateFavoriteButtonState();
+      showNotification(this.lang === 'en' ? "✅ Prompt Saved" : "✅ Prompt Guardado");
+    }
+    
+    loadPrompt(id) {
+      const fav = this.favorites.find(f => f.id === id);
+      if (!fav) return;
+      try {
+        this.STATE = JSON.parse(fav.state);
+        this.updateUI();
+        this.generatePromptsAndDisplay();
+        showNotification(this.lang === 'en' ? "✨ Loaded" : "✨ Cargado");
+        this.clearImageUpload();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    deletePrompt(id) {
+      this.favorites = this.favorites.filter(f => f.id !== id);
+      this.saveFavorites();
+      this.updateFavoriteButtonState();
+    }
+
+    renderFavorites() {
+      const list = byId('favoritesList');
+      const countEl = byId('favCount');
+      if (!list || !countEl) return;
+
+      countEl.textContent = `(${this.favorites.length})`;
+      list.innerHTML = '';
+      
+      if (this.favorites.length === 0) {
+        list.innerHTML = `<p class="no-favorites">${UI_STRINGS.noFav[this.lang]}</p>`;
+        return;
+      }
+
+      this.favorites.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'fav-item';
+        item.dataset.id = p.id;
+
+        const imageHtml = p.image ? `<img src="${p.image}" class="fav-item-image" alt="Image">` : `<div class="fav-item-image" style="background:#555; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">⭐</div>`;
         
-        if (!file) {
-            this.addFavorite(); // If no image, just save the prompt
+        const promptText = this.lang === 'en' ? p.promptEN : p.promptES;
+
+        item.innerHTML = `
+          ${imageHtml}
+          <div class="fav-item-content">
+              <p class="prompt-text">${promptText}</p>
+              <p>${p.timestamp}</p>
+              <div class="fav-actions">
+                  <button class="secondary load-fav" data-id="${p.id}">
+                      ${this.lang === 'en' ? 'Load' : 'Cargar'}
+                  </button>
+                  <button class="delete-fav" data-id="${p.id}">
+                      ${this.lang === 'en' ? 'Delete' : 'Borrar'}
+                  </button>
+              </div>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+      
+      // Add event listeners dynamically
+      list.querySelectorAll('.load-fav').forEach(btn => {
+        btn.addEventListener('click', (e) => this.loadPrompt(parseFloat(e.target.dataset.id)));
+      });
+      list.querySelectorAll('.delete-fav').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          if (confirm(this.lang === 'en' ? "Are you sure you want to delete this prompt?" : "¿Está seguro que desea borrar este prompt?")) {
+            this.deletePrompt(parseFloat(e.target.dataset.id));
+          }
+        });
+      });
+    }
+    
+    updateFavoriteButtonState() {
+      const prompts = this.generatePrompts();
+      const isSaved = this.favorites.some(fav => fav.promptEN === prompts.en && !fav.image);
+      const btnFav = byId('btnFav');
+      const btnSaveWithImage = byId('btnSaveWithImage');
+      
+      if (btnFav) {
+        btnFav.classList.toggle('active', isSaved);
+        byId('favIcon').textContent = isSaved ? '✅' : '⭐';
+      }
+      
+      if (btnSaveWithImage) {
+          btnSaveWithImage.style.display = byId('imagePreview').style.display === 'block' ? 'block' : 'none';
+      }
+    }
+    
+    // --- IMAGE UPLOAD LOGIC ---
+    clearImageUpload() {
+        const preview = byId('imagePreview');
+        const fileInput = byId('imageUpload');
+        const btnSaveWithImage = byId('btnSaveWithImage');
+        
+        if (preview) {
+            preview.style.display = 'none';
+            preview.src = '';
+        }
+        if (fileInput) fileInput.value = '';
+        if (btnSaveWithImage) btnSaveWithImage.style.display = 'none';
+        
+        byId('dropZone').querySelector('span').textContent = UI_STRINGS.dropText[this.lang];
+    }
+    
+    handleFileSelect(file) {
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            showNotification(this.lang === 'en' ? "Image is too large (max 5MB)" : "La imagen es demasiado grande (máx 5MB)", 'danger');
+            this.clearImageUpload();
             return;
         }
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            const base64Image = e.target.result;
-            this.saveFavoriteWithImage(base64Image);
+            const preview = byId('imagePreview');
+            if (preview) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                byId('btnSaveWithImage').style.display = 'block';
+                byId('dropZone').querySelector('span').textContent = this.lang === 'en' ? "Image ready to save." : "Imagen lista para guardar.";
+            }
         };
         reader.readAsDataURL(file);
     }
-
-    saveFavoriteWithImage(base64Image) {
-        let favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        
-        const currentPromptES = this.translateTo(this.currentPromptEN, 'es');
-
-        if (favs.length >= MAX_FAVORITES) {
-            showNotification(this.lang === 'es' ? "Máximo de 20 favoritos alcanzado. Elimina algunos." : "Max 20 favorites reached. Remove some.");
-            return;
+    
+    saveWithImage() {
+        const imageDataURL = byId('imagePreview').src;
+        if (imageDataURL) {
+            this.addFavorite(imageDataURL);
+            this.clearImageUpload();
+        } else {
+             showNotification(this.lang === 'en' ? "No image uploaded yet." : "No se ha subido ninguna imagen aún.", 'warning');
         }
+    }
 
-        favs.unshift({
-            prompt: { en: this.currentPromptEN, es: currentPromptES },
-            image: base64Image
-        });
+    // --- EVENT LISTENERS ---
+    setupEventListeners() {
+      // Input/Select listeners
+      CONTROLS_MAP.forEach(c => {
+        const element = byId(c.id);
+        if (!element) return;
         
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
-        this.loadFavorites();
-        this.handleFileSelect(null, true); // Clear image UI
-        showNotification(UI_STRINGS.savedImage[this.lang]);
-    }
-
-    removeFavorite(index) {
-      if (!confirm(this.lang === 'es' ? "¿Estás seguro de que deseas eliminar este favorito?" : "Are you sure you want to remove this favorite?")) return;
-      
-      let favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      favs.splice(index, 1);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
-      this.loadFavorites();
-      showNotification(UI_STRINGS.favRemoved[this.lang]);
-    }
-
-    clearAllFavorites() {
-      if (!confirm(UI_STRINGS.clearFavsConfirm[this.lang])) return;
-      localStorage.removeItem(STORAGE_KEY);
-      this.loadFavorites();
-      showNotification(this.lang === 'es' ? "Todos los favoritos han sido eliminados." : "All favorites have been cleared.");
-    }
-
-    // Select Population
-    populateSelects() {
-      Object.keys(PROMPT_DATA).forEach(key => {
-        const select = byId(key);
-        if (select) {
-          select.innerHTML = PROMPT_DATA[key].map(item =>
-            `<option value="${item.en}">${item[this.lang] || item.en}</option>`
-          ).join('');
+        if (c.options) {
+          element.addEventListener('change', (e) => {
+            this.STATE[c.id] = e.target.value;
+            // Handle iAngulo default change when iLum changes
+            if (c.id === 'iLum') {
+              const newLumId = e.target.value;
+              const defaultAngle = LIGHTING_DEFAULTS[newLumId] || LIGHTING_DEFAULTS['angulada'];
+              this.STATE.iAngulo = defaultAngle;
+              const iAnguloInput = byId('iAngulo');
+              if (iAnguloInput) iAnguloInput.value = defaultAngle;
+            }
+            this.generatePromptsAndDisplay();
+            this.clearImageUpload();
+            if(c.id === 'cPaleta') this.updatePalettePreview();
+          });
+        }
+        if (c.type === 'number') {
+          element.addEventListener('input', (e) => {
+            this.STATE[c.id] = parseFloat(e.target.value);
+            this.generatePromptsAndDisplay();
+            this.clearImageUpload();
+          });
         }
       });
-    }
-    
-    // Prompt Generation
-    generatePrompt() {
-      const palette = byId('palette').value;
-      const style = byId('style').value;
-      const geometry = byId('geometry').value;
-      const composition = byId('composition').value;
-      const lighting = byId('lighting').value;
-      const mood = byId('mood').value;
-      const complexity = parseInt(byId('complexity').value);
-      
-      // Construct the English prompt first (Base language)
-      let promptEN = `${style}, ${geometry}, ${composition}, ${mood} mood.`;
-      
-      // Add complexity/detail based on range slider
-      if (complexity > 80) {
-        promptEN += " Hyper-detailed, intricate elements.";
-      } else if (complexity < 20) {
-        promptEN += " Simplified, abstract focus on forms.";
-      }
 
-      // Add other modifiers
-      promptEN += ` Rendering: ${lighting}. Color Palette: ${palette}.`;
-      promptEN += " Highly detailed, photorealistic, 8k, trending on ArtStation.";
-
-      this.currentPromptEN = promptEN.trim().replace(/\s\s+/g, ' ');
-
-      // Translate or use English based on current language
-      const finalPrompt = (this.lang === 'en') ? this.currentPromptEN : this.translateTo(this.currentPromptEN, 'es');
-      
-      byId('outMain').textContent = finalPrompt;
-      byId('promptLength').textContent = (this.lang === 'en' ? "Prompt Length: " : "Longitud del Prompt: ") + finalPrompt.length;
-    }
-
-    translateTo(text, targetLang) {
-        if (targetLang === 'en') return text;
-        
-        // Simple translation by mapping English values to Spanish values in the Data
-        let translatedText = text;
-        Object.keys(PROMPT_DATA).forEach(key => {
-            PROMPT_DATA[key].forEach(item => {
-                if (item.en && item.es) {
-                    translatedText = translatedText.replace(item.en, item.es);
-                }
-            });
-        });
-        
-        // Translate remaining generic phrases
-        const genericPhrases = [
-            { en: "mood.", es: "ambiente." },
-            { en: "Hyper-detailed, intricate elements.", es: "Elementos hiperdetallados e intrincados." },
-            { en: "Simplified, abstract focus on forms.", es: "Foco simplificado y abstracto en las formas." },
-            { en: "Rendering:", es: "Renderizado:" },
-            { en: "Color Palette:", es: "Paleta de Colores:" },
-            { en: "Highly detailed, photorealistic, 8k, trending on ArtStation.", es: "Altamente detallado, fotorrealista, 8k, tendencia en ArtStation." }
-        ];
-
-        genericPhrases.forEach(phrase => {
-            translatedText = translatedText.replace(phrase.en, phrase.es);
-        });
-
-        return translatedText.trim().replace(/\s\s+/g, ' ');
-    }
-    
-    // UI Initialization
-    initUI() {
-      this.populateSelects();
-      this.initLanguageSwitch();
-      this.updateUIStrings();
-
-      // Event Listeners
-      Object.keys(PROMPT_DATA).forEach(key => {
-        const select = byId(key);
-        if (select) select.addEventListener('change', () => this.generatePrompt());
-      });
-      
-      byId('complexity').addEventListener('input', (e) => {
-        byId('complexityValue').textContent = e.target.value;
-        this.generatePrompt();
-      });
-
-      byId('btnGenerate').addEventListener('click', () => this.generatePrompt());
+      // Button listeners
+      byId('langToggle').addEventListener('click', () => this.toggleLanguage());
+      byId('btnRand').addEventListener('click', () => this.randomizeState());
+      byId('btnGen').addEventListener('click', () => this.generatePromptsAndDisplay());
       byId('btnReset').addEventListener('click', () => this.resetState());
       byId('btnFav').addEventListener('click', () => this.addFavorite());
       byId('btnSaveWithImage').addEventListener('click', () => this.saveWithImage());
-      byId('btnClearFavs').addEventListener('click', () => this.clearAllFavorites());
       
       const outMain = byId('outMain');
       if(outMain) {
@@ -696,66 +1102,30 @@
           });
       }
       
+      // Dropzone/File Upload listeners
       const dropZone = byId('dropZone');
       const fileInput = byId('imageUpload');
-      dropZone.addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('change', (e) => this.handleFileSelect(e.target.files[0]));
-      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-      dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
-      dropZone.addEventListener('drop', (e) => {
-          e.preventDefault(); dropZone.classList.remove('dragover');
-          if (e.dataTransfer.files && e.dataTransfer.files[0]) this.handleFileSelect(e.dataTransfer.files[0]);
-      });
-    }
-
-    handleFileSelect(file, clear = false) {
-        const dropZone = byId('dropZone');
-        const uploadedImage = byId('uploadedImage');
-        const fileInput = byId('imageUpload');
-        
-        if (clear || !file) {
-            uploadedImage.style.display = 'none';
-            uploadedImage.src = '';
-            fileInput.value = null; // Clear file input
-            dropZone.style.display = 'flex'; // Show drop zone
-            return;
-        }
-
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                uploadedImage.src = e.target.result;
-                uploadedImage.style.display = 'block';
-                dropZone.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            alert(this.lang === 'es' ? "Por favor, sube un archivo de imagen válido." : "Please upload a valid image file.");
-            fileInput.value = null;
-        }
-    }
-
-    resetState() {
-      byId('palette').value = PROMPT_DATA.palette[0].en;
-      byId('style').value = PROMPT_DATA.style[0].en;
-      byId('geometry').value = PROMPT_DATA.geometry[0].en;
-      byId('composition').value = PROMPT_DATA.composition[0].en;
-      byId('lighting').value = PROMPT_DATA.lighting[0].en;
-      byId('mood').value = PROMPT_DATA.mood[0].en;
-      byId('complexity').value = 50;
-      byId('complexityValue').textContent = 50;
-      this.generatePrompt();
+      if (dropZone && fileInput) {
+          dropZone.addEventListener('click', () => fileInput.click());
+          fileInput.addEventListener('change', (e) => this.handleFileSelect(e.target.files[0]));
+          dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+          dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+          dropZone.addEventListener('drop', (e) => {
+              e.preventDefault(); dropZone.classList.remove('dragover');
+              if (e.dataTransfer.files && e.dataTransfer.files[0]) this.handleFileSelect(e.dataTransfer.files[0]);
+          });
+      }
     }
 
     copy(text, msg) {
-        navigator.clipboard.writeText(text);
-        showNotification(msg);
+      navigator.clipboard.writeText(text);
+      showNotification(msg);
     }
   }
 
-  // --- INITIALIZATION ---
+  // Initialize the app
   document.addEventListener('DOMContentLoaded', () => {
-    new AbstractPromptGenerator();
+    window.app = new AbstractPromptGenerator();
   });
 </script>
 </body>
