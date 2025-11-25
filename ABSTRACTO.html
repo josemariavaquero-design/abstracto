@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abstract Art Prompt Generator (v1.9 - Pantone Pro)</title>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png">
+<style>
+  /* Base Style Adaptation */
+  :root{
+    --bg1:#2a1111;
+    --bg2:#3d1a1a;
+    --card:#321515;
+    --ink:#fdf3f3;
+    --muted:#e0caca;
+    --accent:#e64c4c;
+    --accent-rgb: 230, 76, 76;
+    --accent2:#b03a3a;
+    --accent3:#ff6b6b;
+    --ring: rgba(255,100,100,.25);
+    --ring-strong: rgba(255,100,100,.35);
+    --success:#5bc0de;
+    --danger:#ff6b6b;
+    --warning:#ffc107;
+    --transition: all 0.3s ease;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    margin:0; color:var(--ink);
+    font:16px/1.5 'Inter','Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+  .container{
+    max-width:1200px; padding:20px;
+    margin:0 auto;
+  }
+  h1{
+    font-size:1.7rem; margin-bottom:15px; color:var(--accent);
+  }
+  /* UI Components */
+  .grid{
+    display:grid; gap:20px; grid-template-columns:1fr 1fr;
+  }
+  .card{
+    background-color:var(--card); padding:20px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1);
+    transition:var(--transition);
+  }
+  .card-options {
+    display: flex; gap: 10px; margin-top: 15px;
+  }
+  .card-options .btn {
+    flex-grow: 1;
+  }
+  label{
+    display:block; margin-bottom:5px; font-weight:600; color:var(--muted);
+    font-size:.9rem;
+  }
+  select, input[type="range"], textarea{
+    width:100%; padding:10px; border:1px solid var(--bg2); border-radius:5px;
+    background-color:var(--bg2); color:var(--ink);
+    transition:var(--transition);
+    appearance:none; /* For custom styles */
+  }
+  select:focus, textarea:focus, input[type="range"]:focus{
+    outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--ring-strong);
+  }
+  .input-group {
+    margin-bottom: 15px;
+  }
+  .btn {
+    padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;
+    font-weight: 700; text-align: center;
+    transition: var(--transition);
+    background-color: var(--accent); color: var(--ink);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .btn:hover {
+    background-color: var(--accent2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  .btn-secondary {
+    background-color: var(--bg2); color: var(--muted);
+    border: 1px solid var(--bg2);
+  }
+  .btn-secondary:hover {
+    background-color: var(--bg1);
+    border-color: var(--accent2);
+    color: var(--accent);
+  }
+  /* Range specific styles */
+  input[type=range] { height: 28px; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 14px; width: 14px; border-radius: 50%;
+    background: var(--accent); margin-top: -5px;
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 100%; height: 4px; background: var(--bg1);
+    border-radius: 2px;
+  }
+  .range-container {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .range-value {
+    font-weight: bold; width: 40px; text-align: right;
+    color: var(--accent);
+  }
+  
+  /* Output Area */
+  #outMain {
+    background-color: var(--bg2);
+    padding: 20px; border-radius: 10px;
+    white-space: pre-wrap; word-wrap: break-word;
+    font-family: monospace; cursor: copy;
+    border: 2px solid var(--card);
+    transition: border-color 0.3s ease;
+  }
+  #outMain:hover {
+    border-color: var(--accent);
+  }
+  
+  .output-controls {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px;
+  }
+  .output-controls span {
+    font-size: 0.9rem; color: var(--muted);
+  }
+  
+  /* Favorites & Image */
+  #favoritesList {
+    list-style: none; padding: 0; max-height: 400px; overflow-y: auto;
+  }
+  .fav-item {
+    display: flex; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--bg2);
+  }
+  .fav-text {
+    flex-grow: 1; cursor: pointer; font-size: 0.9rem;
+  }
+  .fav-actions button {
+    margin-left: 5px; padding: 5px 8px; font-size: 0.8rem;
+  }
+  
+  #image-area {
+    margin-top: 15px; border-radius: 10px; background-color: var(--bg2); padding: 15px;
+  }
+  #dropZone {
+    height: 150px; border: 2px dashed var(--muted); border-radius: 8px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; cursor: pointer; color: var(--muted);
+    transition: all 0.3s ease;
+  }
+  #dropZone.dragover {
+    border-color: var(--accent); background-color: var(--bg1);
+  }
+  #dropZone p { margin: 5px 0; font-size: 0.9rem; }
+  #imageUpload { display: none; }
+  #uploadedImage {
+    max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px;
+  }
+
+  /* Language Switch */
+  #langSwitch {
+    float: right; margin-top: -30px;
+    padding: 5px 10px; font-size: 0.85rem;
+    background-color: var(--bg2); color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
+  /* Notification */
+  .notification {
+    position: fixed; bottom: 20px; right: 20px;
+    background-color: var(--accent); color: var(--ink);
+    padding: 10px 20px; border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: 1000; opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .notification.show { opacity: 1; }
+
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    #langSwitch {
+      margin-top: 0;
+      float: none;
+      display: block;
+      margin-bottom: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <select id="langSwitch"></select>
+  <h1>Abstract Art Prompt Generator (v1.9 - Pantone Pro)</h1>
+  <div class="grid">
+    <div class="card">
+      <h2><span data-key="titlePrompt">Generador de Prompt</span></h2>
+      <div class="output-controls">
+        <span data-key="clickCopy">Haz click en el prompt para copiarlo.</span>
+        <span data-key="promptLength">Longitud del Prompt:</span>
+      </div>
+      <pre id="outMain" data-key="copyMsg">...</pre>
+      <div class="card-options">
+        <button id="btnGenerate" class="btn" data-key="btnGenerate">GENERAR</button>
+        <button id="btnReset" class="btn btn-secondary" data-key="btnReset">Reiniciar</button>
+      </div>
+      <div class="card-options">
+        <button id="btnFav" class="btn btn-secondary" data-key="btnFav">Añadir a Favoritos</button>
+        <button id="btnSaveWithImage" class="btn btn-secondary" data-key="btnSave">Guardar con Imagen</button>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2><span data-key="titleConfig">Configuración Detallada</span></h2>
+      
+      <div class="input-group">
+        <label for="palette" data-key="labelPalette">Paleta de Color Pantone (Basado en la Colección Pro)</label>
+        <select id="palette"></select>
+      </div>
+      
+      <div class="input-group">
+        <label for="style" data-key="labelStyle">Estilo de Abstracción</label>
+        <select id="style"></select>
+      </div>
+
+      <div class="input-group">
+        <label for="geometry" data-key="labelGeometry">Geometría/Composición</label>
+        <select id="geometry"></select>
+      </div>
+
+      <div class="input-group">
+        <label for="composition" data-key="labelComposition">Elementos Composicionales</label>
+        <select id="composition"></select>
+      </div>
+
+      <div class="input-group">
+        <label for="lighting" data-key="labelLighting">Iluminación y Renderizado</label>
+        <select id="lighting"></select>
+      </div>
+      
+      <div class="input-group">
+        <label for="mood" data-key="labelMood">Estado de Ánimo/Tema</label>
+        <select id="mood"></select>
+      </div>
+
+      <div class="input-group">
+        <label for="complexity" data-key="labelComplexity">Nivel de Detalle/Complejidad</label>
+        <div class="range-container">
+          <input type="range" id="complexity" min="0" max="100" step="1" value="50">
+          <span class="range-value" id="complexityValue">50</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top: 20px;">
+    <div class="card">
+      <h2><span data-key="titleFavs">Favoritos Guardados</span></h2>
+      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;" data-key="favsTip">Los favoritos se guardan localmente en tu navegador. Puedes guardar hasta 20.</p>
+      <ul id="favoritesList"></ul>
+      <button id="btnClearFavs" class="btn btn-secondary" style="width:100%; margin-top:10px;" data-key="btnClearFavs">Limpiar Todos los Favoritos</button>
+    </div>
+    <div class="card">
+      <h2><span data-key="titleImage">Referencia de Imagen (Opcional)</span></h2>
+      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:10px;" data-key="imageTip">Arrastra o haz click para añadir una imagen que se guardará junto con el prompt.</p>
+      <div id="dropZone">
+        <p data-key="dropText">Arrastra o haz click para subir una imagen</p>
+      </div>
+      <input type="file" id="imageUpload" accept="image/*">
+      <img id="uploadedImage" style="display: none;" />
+    </div>
+  </div>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script>
+  // --- DATA (CONTENT) ---
+  const PROMPT_DATA = {
+    palette: [
+      { en: "PANTONE 18-3838 Ultra Violet", es: "PANTONE 18-3838 Ultra Violeta" },
+      { en: "PANTONE 17-5104 Ultimate Gray", es: "PANTONE 17-5104 Gris Definitivo" },
+      { en: "PANTONE 13-0647 Illuminating", es: "PANTONE 13-0647 Iluminador" },
+      { en: "PANTONE 19-4052 Classic Blue", es: "PANTONE 19-4052 Azul Clásico" },
+      { en: "PANTONE 16-1546 Living Coral", es: "PANTONE 16-1546 Coral Vivo" },
+      { en: "PANTONE 18-3838 Radiant Orchid", es: "PANTONE 18-3838 Orquídea Radiante" },
+      { en: "PANTONE 17-5641 Emerald", es: "PANTONE 17-5641 Esmeralda" },
+      { en: "PANTONE 19-1500 Marsala", es: "PANTONE 19-1500 Marsala" },
+      { en: "PANTONE 15-0343 Greenery", es: "PANTONE 15-0343 Verdura" },
+      { en: "PANTONE 18-1438 Russet Orange", es: "PANTONE 18-1438 Naranja Rojizo" },
+      { en: "PANTONE 15-1335 Peach Fuzz", es: "PANTONE 15-1335 Pelusa de Melocotón" },
+      { en: "PANTONE 13-4108 Serenity", es: "PANTONE 13-4108 Serenidad" },
+      { en: "PANTONE 15-3919 Blue Iris", es: "PANTONE 15-3919 Iris Azul" },
+      { en: "PANTONE 18-4220 Turkish Sea", es: "PANTONE 18-4220 Mar Turquesa" },
+      { en: "PANTONE 16-1325 Burnt Sienna", es: "PANTONE 16-1325 Siena Tostada" },
+      { en: "PANTONE 19-1557 Chili Pepper", es: "PANTONE 19-1557 Chile Picante" },
+      { en: "PANTONE 16-1358 Orange Tiger", es: "PANTONE 16-1358 Tigre Naranja" },
+      { en: "PANTONE 18-1750 Viva Magenta", es: "PANTONE 18-1750 Viva Magenta" },
+      { en: "PANTONE 17-3938 Very Peri", es: "PANTONE 17-3938 Very Peri" },
+      { en: "PANTONE 14-0852 Marigold", es: "PANTONE 14-0852 Caléndula" },
+      { en: "PANTONE 18-4005 Faded Denim", es: "PANTONE 18-4005 Denim Descolorido" },
+      { en: "PANTONE 16-1350 Amber Glow", es: "PANTONE 16-1350 Resplandor Ámbar" },
+      { en: "PANTONE 19-4032 Dress Blues", es: "PANTONE 19-4032 Azul Vestido" },
+      { en: "PANTONE 15-1050 Sandstone", es: "PANTONE 15-1050 Arenisca" },
+      { en: "PANTONE 17-6153 Forest Night", es: "PANTONE 17-6153 Noche Forestal" },
+      { en: "PANTONE 18-1550 Aurora Red", es: "PANTONE 18-1550 Rojo Aurora" },
+      { en: "PANTONE 19-0303 Jet Black", es: "PANTONE 19-0303 Negro Azabache" },
+      { en: "PANTONE 11-0601 Bright White", es: "PANTONE 11-0601 Blanco Brillante" },
+      { en: "PANTONE 14-4809 Celestial Blue", es: "PANTONE 14-4809 Azul Celestial" },
+      { en: "PANTONE 17-4726 Deep Dive", es: "PANTONE 17-4726 Inmersión Profunda" }
+    ],
+    style: [
+      { en: "Abstract Expressionism", es: "Expresionismo Abstracto" },
+      { en: "Geometric Abstraction", es: "Abstracción Geométrica" },
+      { en: "Lyrical Abstraction", es: "Abstracción Lírica" },
+      { en: "Minimalist Abstract", es: "Abstracto Minimalista" },
+      { en: "Color Field Painting", es: "Pintura de Campo de Color" },
+      { en: "Neo-Plasticism (De Stijl)", es: "Neoplasticismo (De Stijl)" },
+      { en: "Tachisme (Spot Painting)", es: "Tachismo (Pintura de Manchas)" },
+      { en: "Abstract Futurism", es: "Futurismo Abstracto" },
+      { en: "Digital Abstract Art", es: "Arte Abstracto Digital" },
+      { en: "Glitch Art Abstraction", es: "Abstracción de Arte Glitch" }
+    ],
+    geometry: [
+      { en: "Complex Interlocking Shapes", es: "Formas Enclavadas Complejas" },
+      { en: "Fluid, Curving Lines and Swirls", es: "Líneas Fluidas, Curvas y Remolinos" },
+      { en: "Grids and Precise Geometric Patterns", es: "Cuadrículas y Patrones Geométricos Precisos" },
+      { en: "Asymmetrical Balance, Dynamic Angles", es: "Balance Asimétrico, Ángulos Dinámicos" },
+      { en: "Fractal-like, Self-Similar Structures", es: "Estructuras Fractales, Autosimilares" },
+      { en: "Deconstructed Forms, Layered Transparency", es: "Formas Deconstruidas, Transparencia en Capas" },
+      { en: "Hard-Edge Lines and Smooth Transitions", es: "Líneas de Borde Duro y Transiciones Suaves" },
+      { en: "Biomorphic Shapes, Organic Flow", es: "Formas Biomórficas, Flujo Orgánico" }
+    ],
+    composition: [
+      { en: "A central focal point that dominates the canvas", es: "Un punto focal central que domina el lienzo" },
+      { en: "Infinite horizon, borderless composition", es: "Horizonte infinito, composición sin bordes" },
+      { en: "Tessellation pattern, repetition of motifs", es: "Patrón de teselado, repetición de motivos" },
+      { en: "Depth achieved through overlapping and chiaroscuro", es: "Profundidad lograda a través de superposición y claroscuro" },
+      { en: "Negative space is an active compositional element", es: "El espacio negativo es un elemento composicional activo" },
+      { en: "Scattered elements creating visual noise", es: "Elementos dispersos que crean ruido visual" },
+      { en: "Strong vertical and horizontal emphasis", es: "Fuerte énfasis vertical y horizontal" },
+      { en: "Radial symmetry and concentric circles", es: "Simetría radial y círculos concéntricos" }
+    ],
+    lighting: [
+      { en: "Dramatic volumetric lighting, cinematic mood", es: "Iluminación volumétrica dramática, ambiente cinematográfico" },
+      { en: "Soft, diffused global illumination, studio quality", es: "Iluminación global suave y difusa, calidad de estudio" },
+      { en: "High contrast rim light, cyberpunk aesthetic", es: "Luz de borde de alto contraste, estética ciberpunk" },
+      { en: "Backlit, colors bleeding into the light source", es: "Contraluz, colores que se desangran en la fuente de luz" },
+      { en: "Iridescent and holographic material rendering", es: "Renderizado de material iridiscente y holográfico" },
+      { en: "An ethereal glow, slightly out of focus (depth of field)", es: "Un resplandor etéreo, ligeramente desenfocado (profundidad de campo)" },
+      { en: "Matte, non-reflective surfaces, flat lighting", es: "Superficies mate, no reflectantes, iluminación plana" },
+      { en: "Caustic light patterns, subsurface scattering effects", es: "Patrones de luz cáustica, efectos de dispersión subsuperficial" }
+    ],
+    mood: [
+      { en: "A feeling of deep melancholy and introspection", es: "Un sentimiento de profunda melancolía e introspección" },
+      { en: "Energetic and chaotic, bursting with motion", es: "Energético y caótico, explotando de movimiento" },
+      { en: "Serene, tranquil, and meditative", es: "Sereno, tranquilo y meditativo" },
+      { en: "Vibrant and celebratory, a joyful explosion", es: "Vibrante y festivo, una explosión de alegría" },
+      { en: "Industrial and cold, metallic textures", es: "Industrial y frío, texturas metálicas" },
+      { en: "Warm and inviting, organic textures", es: "Cálido y acogedor, texturas orgánicas" },
+      { en: "Mysterious and ancient, faded colors", es: "Misterioso y antiguo, colores desvanecidos" },
+      { en: "Technological and futuristic, glowing lines", es: "Tecnológico y futurista, líneas brillantes" }
+    ]
+  };
+
+  const UI_STRINGS = {
+    titlePrompt: { en: "Prompt Generator", es: "Generador de Prompt" },
+    clickCopy: { en: "Click on the prompt to copy it.", es: "Haz click en el prompt para copiarlo." },
+    promptLength: { en: "Prompt Length: 0", es: "Longitud del Prompt: 0" },
+    titleConfig: { en: "Detailed Configuration", es: "Configuración Detallada" },
+    labelPalette: { en: "Pantone Color Palette (Based on Pro Collection)", es: "Paleta de Color Pantone (Basado en la Colección Pro)" },
+    labelStyle: { en: "Abstraction Style", es: "Estilo de Abstracción" },
+    labelGeometry: { en: "Geometry/Composition", es: "Geometría/Composición" },
+    labelComposition: { en: "Compositional Elements", es: "Elementos Composicionales" },
+    labelLighting: { en: "Lighting and Rendering", es: "Iluminación y Renderizado" },
+    labelMood: { en: "Mood/Theme", es: "Estado de Ánimo/Tema" },
+    labelComplexity: { en: "Detail Level/Complexity", es: "Nivel de Detalle/Complejidad" },
+    btnGenerate: { en: "GENERATE", es: "GENERAR" },
+    btnReset: { en: "Reset", es: "Reiniciar" },
+    btnFav: { en: "Add to Favorites", es: "Añadir a Favoritos" },
+    btnSave: { en: "Save with Image", es: "Guardar con Imagen" },
+    copyMsg: { en: "Prompt copied to clipboard!", es: "¡Prompt copiado al portapapeles!" },
+    favAdded: { en: "Prompt added to favorites!", es: "¡Prompt añadido a favoritos!" },
+    favRemoved: { en: "Favorite removed.", es: "Favorito eliminado." },
+    favsTip: { en: "Favorites are saved locally in your browser. You can save up to 20.", es: "Los favoritos se guardan localmente en tu navegador. Puedes guardar hasta 20." },
+    btnClearFavs: { en: "Clear All Favorites", es: "Limpiar Todos los Favoritos" },
+    titleFavs: { en: "Saved Favorites", es: "Favoritos Guardados" },
+    titleImage: { en: "Image Reference (Optional)", es: "Referencia de Imagen (Opcional)" },
+    imageTip: { en: "Drag or click to add an image that will be saved with the prompt.", es: "Arrastra o haz click para añadir una imagen que se guardará junto con el prompt." },
+    dropText: { en: "Drag or click to upload an image", es: "Arrastra o haz click para subir una imagen" },
+    clearFavsConfirm: { en: "Are you sure you want to clear all favorites?", es: "¿Estás seguro de que deseas eliminar todos los favoritos?" },
+    savedImage: { en: "Prompt and image saved!", es: "¡Prompt e imagen guardados!" },
+    langEn: { en: "English", es: "Inglés" },
+    langEs: { en: "Spanish", es: "Español" }
+  };
+
+  // --- UTILITIES ---
+  const byId = id => document.getElementById(id);
+  const STORAGE_KEY = 'abstractPrompts';
+  const MAX_FAVORITES = 20;
+
+  function showNotification(msg) {
+      const notif = byId('notification');
+      notif.textContent = msg;
+      notif.classList.add('show');
+      setTimeout(() => {
+          notif.classList.remove('show');
+      }, 3000);
+  }
+
+  // --- GENERATOR CLASS ---
+  class AbstractPromptGenerator {
+    constructor() {
+      this.lang = localStorage.getItem('lang') || 'es'; // Default to Spanish
+      this.currentPromptEN = "";
+      this.initUI();
+      this.loadFavorites();
+      this.generatePrompt();
+    }
+
+    // Language Handling
+    updateUIStrings() {
+      document.querySelectorAll('[data-key]').forEach(element => {
+          const key = element.getAttribute('data-key');
+          if (UI_STRINGS[key]) {
+              if (element.tagName === 'BUTTON') {
+                element.textContent = UI_STRINGS[key][this.lang];
+              } else if (element.tagName === 'SPAN' || element.tagName === 'P') {
+                element.textContent = UI_STRINGS[key][this.lang];
+              } else if (element.tagName === 'PRE') {
+                element.dataset.copyMsg = UI_STRINGS.copyMsg[this.lang]; // Update copy message on output box
+              }
+          }
+      });
+
+      // Update dropdowns
+      this.populateSelects();
+    }
+
+    setLanguage(lang) {
+      this.lang = lang;
+      localStorage.setItem('lang', lang);
+      this.updateUIStrings();
+      this.generatePrompt(); // Regenerate prompt to reflect new language
+      this.loadFavorites(); // Reload favorites to update language
+    }
+
+    initLanguageSwitch() {
+      const langSwitch = byId('langSwitch');
+      langSwitch.innerHTML = `
+        <option value="es">${UI_STRINGS.langEs.es}</option>
+        <option value="en">${UI_STRINGS.langEn.es}</option>
+      `; // Options are always rendered with Spanish names for clarity
+
+      langSwitch.value = this.lang;
+
+      langSwitch.addEventListener('change', (e) => {
+        const newLang = e.target.value;
+        this.setLanguage(newLang);
+      });
+    }
+
+
+    // Favorites Handling
+    loadFavorites() {
+      const favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      const list = byId('favoritesList');
+      list.innerHTML = '';
+      
+      favs.forEach((fav, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = 'fav-item';
+        
+        const text = document.createElement('span');
+        text.className = 'fav-text';
+        text.textContent = fav.prompt[this.lang] || fav.prompt.es; // Use current language
+        text.title = fav.prompt.en; // Show English as tooltip
+        text.addEventListener('click', () => {
+          this.copy(fav.prompt.en, UI_STRINGS.copyMsg[this.lang]);
+        });
+        
+        const actions = document.createElement('div');
+        actions.className = 'fav-actions';
+
+        if (fav.image) {
+            const img = document.createElement('img');
+            img.src = fav.image;
+            img.style.maxWidth = '50px';
+            img.style.maxHeight = '50px';
+            img.style.marginRight = '10px';
+            img.style.borderRadius = '5px';
+            listItem.insertBefore(img, text);
+        }
+        
+        const btnRemove = document.createElement('button');
+        btnRemove.className = 'btn btn-secondary';
+        btnRemove.textContent = 'X';
+        btnRemove.title = this.lang === 'es' ? 'Eliminar' : 'Remove';
+        btnRemove.addEventListener('click', () => this.removeFavorite(index));
+        
+        actions.appendChild(btnRemove);
+        listItem.appendChild(text);
+        listItem.appendChild(actions);
+        list.appendChild(listItem);
+      });
+    }
+
+    addFavorite() {
+      const favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      
+      // Check if prompt already exists (by English version)
+      const exists = favs.some(fav => fav.prompt.en === this.currentPromptEN);
+      if (exists) {
+        showNotification(this.lang === 'es' ? "Este prompt ya está en favoritos." : "This prompt is already in favorites.");
+        return;
+      }
+
+      if (favs.length >= MAX_FAVORITES) {
+        showNotification(this.lang === 'es' ? "Máximo de 20 favoritos alcanzado. Elimina algunos." : "Max 20 favorites reached. Remove some.");
+        return;
+      }
+
+      const currentPromptES = this.translateTo(this.currentPromptEN, 'es');
+      
+      favs.unshift({
+          prompt: { en: this.currentPromptEN, es: currentPromptES },
+          image: null // Placeholder for image
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+      this.loadFavorites();
+      showNotification(UI_STRINGS.favAdded[this.lang]);
+    }
+    
+    saveWithImage() {
+        const fileInput = byId('imageUpload');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            this.addFavorite(); // If no image, just save the prompt
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64Image = e.target.result;
+            this.saveFavoriteWithImage(base64Image);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    saveFavoriteWithImage(base64Image) {
+        let favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        
+        const currentPromptES = this.translateTo(this.currentPromptEN, 'es');
+
+        if (favs.length >= MAX_FAVORITES) {
+            showNotification(this.lang === 'es' ? "Máximo de 20 favoritos alcanzado. Elimina algunos." : "Max 20 favorites reached. Remove some.");
+            return;
+        }
+
+        favs.unshift({
+            prompt: { en: this.currentPromptEN, es: currentPromptES },
+            image: base64Image
+        });
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+        this.loadFavorites();
+        this.handleFileSelect(null, true); // Clear image UI
+        showNotification(UI_STRINGS.savedImage[this.lang]);
+    }
+
+    removeFavorite(index) {
+      if (!confirm(this.lang === 'es' ? "¿Estás seguro de que deseas eliminar este favorito?" : "Are you sure you want to remove this favorite?")) return;
+      
+      let favs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      favs.splice(index, 1);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favs));
+      this.loadFavorites();
+      showNotification(UI_STRINGS.favRemoved[this.lang]);
+    }
+
+    clearAllFavorites() {
+      if (!confirm(UI_STRINGS.clearFavsConfirm[this.lang])) return;
+      localStorage.removeItem(STORAGE_KEY);
+      this.loadFavorites();
+      showNotification(this.lang === 'es' ? "Todos los favoritos han sido eliminados." : "All favorites have been cleared.");
+    }
+
+    // Select Population
+    populateSelects() {
+      Object.keys(PROMPT_DATA).forEach(key => {
+        const select = byId(key);
+        if (select) {
+          select.innerHTML = PROMPT_DATA[key].map(item =>
+            `<option value="${item.en}">${item[this.lang] || item.en}</option>`
+          ).join('');
+        }
+      });
+    }
+    
+    // Prompt Generation
+    generatePrompt() {
+      const palette = byId('palette').value;
+      const style = byId('style').value;
+      const geometry = byId('geometry').value;
+      const composition = byId('composition').value;
+      const lighting = byId('lighting').value;
+      const mood = byId('mood').value;
+      const complexity = parseInt(byId('complexity').value);
+      
+      // Construct the English prompt first (Base language)
+      let promptEN = `${style}, ${geometry}, ${composition}, ${mood} mood.`;
+      
+      // Add complexity/detail based on range slider
+      if (complexity > 80) {
+        promptEN += " Hyper-detailed, intricate elements.";
+      } else if (complexity < 20) {
+        promptEN += " Simplified, abstract focus on forms.";
+      }
+
+      // Add other modifiers
+      promptEN += ` Rendering: ${lighting}. Color Palette: ${palette}.`;
+      promptEN += " Highly detailed, photorealistic, 8k, trending on ArtStation.";
+
+      this.currentPromptEN = promptEN.trim().replace(/\s\s+/g, ' ');
+
+      // Translate or use English based on current language
+      const finalPrompt = (this.lang === 'en') ? this.currentPromptEN : this.translateTo(this.currentPromptEN, 'es');
+      
+      byId('outMain').textContent = finalPrompt;
+      byId('promptLength').textContent = (this.lang === 'en' ? "Prompt Length: " : "Longitud del Prompt: ") + finalPrompt.length;
+    }
+
+    translateTo(text, targetLang) {
+        if (targetLang === 'en') return text;
+        
+        // Simple translation by mapping English values to Spanish values in the Data
+        let translatedText = text;
+        Object.keys(PROMPT_DATA).forEach(key => {
+            PROMPT_DATA[key].forEach(item => {
+                if (item.en && item.es) {
+                    translatedText = translatedText.replace(item.en, item.es);
+                }
+            });
+        });
+        
+        // Translate remaining generic phrases
+        const genericPhrases = [
+            { en: "mood.", es: "ambiente." },
+            { en: "Hyper-detailed, intricate elements.", es: "Elementos hiperdetallados e intrincados." },
+            { en: "Simplified, abstract focus on forms.", es: "Foco simplificado y abstracto en las formas." },
+            { en: "Rendering:", es: "Renderizado:" },
+            { en: "Color Palette:", es: "Paleta de Colores:" },
+            { en: "Highly detailed, photorealistic, 8k, trending on ArtStation.", es: "Altamente detallado, fotorrealista, 8k, tendencia en ArtStation." }
+        ];
+
+        genericPhrases.forEach(phrase => {
+            translatedText = translatedText.replace(phrase.en, phrase.es);
+        });
+
+        return translatedText.trim().replace(/\s\s+/g, ' ');
+    }
+    
+    // UI Initialization
+    initUI() {
+      this.populateSelects();
+      this.initLanguageSwitch();
+      this.updateUIStrings();
+
+      // Event Listeners
+      Object.keys(PROMPT_DATA).forEach(key => {
+        const select = byId(key);
+        if (select) select.addEventListener('change', () => this.generatePrompt());
+      });
+      
+      byId('complexity').addEventListener('input', (e) => {
+        byId('complexityValue').textContent = e.target.value;
+        this.generatePrompt();
+      });
+
+      byId('btnGenerate').addEventListener('click', () => this.generatePrompt());
+      byId('btnReset').addEventListener('click', () => this.resetState());
+      byId('btnFav').addEventListener('click', () => this.addFavorite());
+      byId('btnSaveWithImage').addEventListener('click', () => this.saveWithImage());
+      byId('btnClearFavs').addEventListener('click', () => this.clearAllFavorites());
+      
+      const outMain = byId('outMain');
+      if(outMain) {
+          outMain.addEventListener('click', (e) => {
+              this.copy(this.currentPromptEN, UI_STRINGS.copyMsg[this.lang]);
+          });
+      }
+      
+      const dropZone = byId('dropZone');
+      const fileInput = byId('imageUpload');
+      dropZone.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => this.handleFileSelect(e.target.files[0]));
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+      dropZone.addEventListener('drop', (e) => {
+          e.preventDefault(); dropZone.classList.remove('dragover');
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) this.handleFileSelect(e.dataTransfer.files[0]);
+      });
+    }
+
+    handleFileSelect(file, clear = false) {
+        const dropZone = byId('dropZone');
+        const uploadedImage = byId('uploadedImage');
+        const fileInput = byId('imageUpload');
+        
+        if (clear || !file) {
+            uploadedImage.style.display = 'none';
+            uploadedImage.src = '';
+            fileInput.value = null; // Clear file input
+            dropZone.style.display = 'flex'; // Show drop zone
+            return;
+        }
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImage.src = e.target.result;
+                uploadedImage.style.display = 'block';
+                dropZone.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            alert(this.lang === 'es' ? "Por favor, sube un archivo de imagen válido." : "Please upload a valid image file.");
+            fileInput.value = null;
+        }
+    }
+
+    resetState() {
+      byId('palette').value = PROMPT_DATA.palette[0].en;
+      byId('style').value = PROMPT_DATA.style[0].en;
+      byId('geometry').value = PROMPT_DATA.geometry[0].en;
+      byId('composition').value = PROMPT_DATA.composition[0].en;
+      byId('lighting').value = PROMPT_DATA.lighting[0].en;
+      byId('mood').value = PROMPT_DATA.mood[0].en;
+      byId('complexity').value = 50;
+      byId('complexityValue').textContent = 50;
+      this.generatePrompt();
+    }
+
+    copy(text, msg) {
+        navigator.clipboard.writeText(text);
+        showNotification(msg);
+    }
+  }
+
+  // --- INITIALIZATION ---
+  document.addEventListener('DOMContentLoaded', () => {
+    new AbstractPromptGenerator();
+  });
+</script>
+</body>
+</html>
